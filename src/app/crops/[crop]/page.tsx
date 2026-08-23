@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getCropBySlug, getCropZones, getZones, getPosts, getCrops } from "@/lib/data";
+import { getCropBySlug, getCropZones, getZones, getPosts } from "@/lib/data";
 import { PostCard } from "@/components/PostCard";
 import { EmptyState } from "@/components/EmptyState";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
@@ -82,8 +82,6 @@ export default async function CropDetailPage({ params }: { params: Promise<{ cro
   );
 }
 
-export async function generateStaticParams() {
-  const crops = await getCrops();
-  const { slugify } = await import("@/lib/slug");
-  return crops.map((c) => ({ crop: slugify(c.name_en) }));
-}
+// No generateStaticParams here: crop data (and RLS/auth cookies) are only
+// available at request time via the server Supabase client, not at build
+// time, and this is live community content anyway — render on demand.

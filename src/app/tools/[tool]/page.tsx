@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   getEquipmentBySlug,
-  getEquipmentList,
   getSchemeById,
   getVendorEquipmentFor,
   getPosts,
@@ -11,7 +10,6 @@ import { AvailabilityBadge } from "@/components/AvailabilityBadge";
 import { PostCard } from "@/components/PostCard";
 import { EmptyState } from "@/components/EmptyState";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
-import { slugify } from "@/lib/slug";
 
 export default async function ToolDetailPage({ params }: { params: Promise<{ tool: string }> }) {
   const { tool: slug } = await params;
@@ -117,7 +115,6 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ too
   );
 }
 
-export async function generateStaticParams() {
-  const list = await getEquipmentList();
-  return list.map((e) => ({ tool: slugify(e.name) }));
-}
+// No generateStaticParams here: equipment data needs the request-time,
+// cookie-based server Supabase client, which isn't available at build time
+// — render on demand instead (see the same note on /crops/[crop]).
