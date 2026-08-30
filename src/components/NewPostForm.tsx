@@ -5,16 +5,18 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ensureSession, applyGuestIdentity } from "@/lib/auth";
 import { GuestIdentityFields } from "./GuestIdentityFields";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import type { DictionaryKey } from "@/lib/i18n/dictionary";
 import type { Crop, District, PostType, Tag } from "@/types/database";
 
-const postTypeOptions: { value: PostType; label: string; icon: string }[] = [
-  { value: "question", label: "Question", icon: "❓" },
-  { value: "disease_pest_report", label: "Pest / Disease report", icon: "🐛" },
-  { value: "fertilizer_tip", label: "Fertilizer tip", icon: "🌱" },
-  { value: "market_price_report", label: "Market price report", icon: "💰" },
-  { value: "success_story", label: "Success story", icon: "🏆" },
-  { value: "general_discussion", label: "General discussion", icon: "💬" },
-  { value: "equipment_review", label: "Equipment review", icon: "🚜" },
+const postTypeOptions: { value: PostType; key: DictionaryKey; icon: string }[] = [
+  { value: "question", key: "postTypeQuestion", icon: "❓" },
+  { value: "disease_pest_report", key: "postTypeDisease", icon: "🐛" },
+  { value: "fertilizer_tip", key: "postTypeFertilizer", icon: "🌱" },
+  { value: "market_price_report", key: "postTypeMarket", icon: "💰" },
+  { value: "success_story", key: "postTypeSuccess", icon: "🏆" },
+  { value: "general_discussion", key: "postTypeGeneral", icon: "💬" },
+  { value: "equipment_review", key: "postTypeEquipment", icon: "🚜" },
 ];
 
 export function NewPostForm({
@@ -26,6 +28,7 @@ export function NewPostForm({
   districts: District[];
   tags: Tag[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [type, setType] = useState<PostType>("question");
   const [cropId, setCropId] = useState("");
@@ -138,22 +141,23 @@ export function NewPostForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <h1 className="text-xl font-bold">{t("createPostTitle")}</h1>
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Post type</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("postTypeLabel")}</label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {postTypeOptions.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setType(opt.value)}
-              className={`rounded-lg border px-2 py-2 text-xs font-medium ${
+              className={`rounded-xl border px-2 py-2 text-xs font-medium transition-colors ${
                 type === opt.value
                   ? "border-green-600 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
-                  : "border-neutral-300 dark:border-neutral-700"
+                  : "border-neutral-300 hover:border-neutral-400 dark:border-neutral-700"
               }`}
             >
               <div className="text-lg">{opt.icon}</div>
-              {opt.label}
+              {t(opt.key)}
             </button>
           ))}
         </div>
@@ -161,13 +165,13 @@ export function NewPostForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1.5 block text-sm font-medium">Crop</label>
+          <label className="mb-1.5 block text-sm font-medium">{t("cropLabel")}</label>
           <select
             value={cropId}
             onChange={(e) => setCropId(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
           >
-            <option value="">— none —</option>
+            <option value="">{t("noneOption")}</option>
             {crops.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name_en}
@@ -176,13 +180,13 @@ export function NewPostForm({
           </select>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium">District</label>
+          <label className="mb-1.5 block text-sm font-medium">{t("districtLabel")}</label>
           <select
             value={districtId}
             onChange={(e) => setDistrictId(e.target.value)}
             className="w-full rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
           >
-            <option value="">— none —</option>
+            <option value="">{t("noneOption")}</option>
             {districts.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -193,7 +197,7 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Title</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("titleLabel")}</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -203,7 +207,7 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Description</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("descriptionLabel")}</label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -214,7 +218,7 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Photos (helpful for pest/disease reports)</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("photosLabel")}</label>
         <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="text-sm" />
         {uploading && <p className="mt-1 text-xs text-neutral-400">Uploading...</p>}
         {images.length > 0 && (
@@ -228,7 +232,7 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Tags (comma-separated)</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("tagsLabel")}</label>
         <input
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
@@ -238,7 +242,7 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">Not signed in? No problem</label>
+        <label className="mb-1.5 block text-sm font-medium">{t("guestFieldsLabel")}</label>
         <GuestIdentityFields name={guestName} onNameChange={setGuestName} contact={guestContact} onContactChange={setGuestContact} />
       </div>
 
@@ -247,9 +251,9 @@ export function NewPostForm({
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+        className="rounded-full bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-shadow hover:shadow-md hover:bg-green-700 disabled:opacity-50"
       >
-        {submitting ? "Posting..." : "Post to community"}
+        {submitting ? t("postingBusy") : t("submitPost")}
       </button>
     </form>
   );

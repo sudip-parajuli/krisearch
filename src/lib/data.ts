@@ -277,3 +277,33 @@ export async function getOpenReports(): Promise<Report[]> {
   if (error) return [];
   return data ?? [];
 }
+
+export type PlatformStats = {
+  postCount: number;
+  farmerCount: number;
+  districtCount: number;
+  cropCount: number;
+};
+
+/** Real counts for the homepage stats strip — zeros (not an error) if unconfigured. */
+export async function getPlatformStats(): Promise<PlatformStats> {
+  const empty = { postCount: 0, farmerCount: 0, districtCount: 0, cropCount: 0 };
+  if (!isSupabaseConfigured) return empty;
+  const supabase = await createClient();
+
+  const [posts, profiles, districtsWithPosts, crops] = await Promise.all([
+    supabase.from("posts").select("id", { count: "exact", head: true }),
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    supabase.from("posts").select("district_id"),
+    supabase.from("crops").select("id", { count: "exact", head: true }),
+  ]);
+
+  const distinctDistricts = new Set((districtsWithPosts.data ?? []).map((p) => p.district_id).filter(Boolean));
+
+  return {
+    postCount: posts.count ?? 0,
+    farmerCount: profiles.count ?? 0,
+    districtCount: distinctDistricts.size,
+    cropCount: crops.count ?? 0,
+  };
+}

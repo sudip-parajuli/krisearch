@@ -30,10 +30,10 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
+      <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-neutral-800/80 dark:bg-neutral-950/90">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2 font-bold text-green-700 dark:text-green-400">
-            <span className="text-xl">🌾</span>
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-green-700 dark:text-green-400">
+            <span className="text-2xl">🌾</span>
             <span>{t("appName")}</span>
           </Link>
 

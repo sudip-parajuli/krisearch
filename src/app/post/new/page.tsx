@@ -8,7 +8,6 @@ export default async function NewPostPage() {
   return (
     <div className="mx-auto max-w-xl">
       <SupabaseSetupNotice />
-      <h1 className="mb-4 text-xl font-bold">Share with the community</h1>
       <NewPostForm crops={crops} districts={districts} tags={tags} />
     </div>
   );

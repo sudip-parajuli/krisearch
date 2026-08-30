@@ -81,6 +81,8 @@ export type EquipmentScope = "nepal" | "global";
 export type Equipment = {
   id: number;
   name: string;
+  name_np: string | null;
+  video_url: string | null;
   category: EquipmentCategory | null;
   description: string | null;
   how_it_helps: string | null;

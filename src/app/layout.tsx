@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ne"
       className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="flex min-h-full flex-col bg-[#f6f8f6] text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
         <LanguageProvider>
           <Navbar />
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">{children}</main>

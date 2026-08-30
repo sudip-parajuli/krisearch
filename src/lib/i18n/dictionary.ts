@@ -57,7 +57,14 @@ export const dictionary = {
 
   // crops
   generalGuidance: { ne: "सामान्य जानकारी (सन्दर्भ मात्र)", en: "General guidance (reference only)" },
+  generalGuidanceLong: {
+    ne: "सामान्य जानकारी — सन्दर्भका लागि मात्र, तलको समुदायको अनुभवको विकल्प होइन",
+    en: "General guidance — reference only, not a substitute for the community below",
+  },
   communityFeedFor: { ne: "समुदाय फिड", en: "Community feed" },
+  plantLabel: { ne: "रोप्ने समय", en: "plant" },
+  noCropPostsYet: { ne: "यो बालीका लागि अहिलेसम्म कुनै पोस्ट छैन", en: "No community posts for this crop yet" },
+  shareAboutPrefix: { ne: "बारे लेख्नुहोस्:", en: "Share about" },
 
   // schemes
   lastVerified: { ne: "अन्तिम पुष्टि", en: "Last verified" },
@@ -98,6 +105,126 @@ export const dictionary = {
     en: "Add your real Supabase project credentials to .env.local to see live data.",
   },
   report: { ne: "रिपोर्ट गर्नुहोस्", en: "Report" },
+
+  // stats strip
+  statPosts: { ne: "पोस्टहरू", en: "Posts" },
+  statFarmers: { ne: "सदस्यहरू", en: "Members" },
+  statDistricts: { ne: "जिल्लाहरू", en: "Districts active" },
+  statCrops: { ne: "बालीहरू ट्र्याक", en: "Crops tracked" },
+
+  // homepage extras
+  whyTitle: { ne: "किन कृषिSearch?", en: "Why Krisearch?" },
+  whyPoint1Title: { ne: "साथी किसानको अनुभव", en: "Real farmer experience" },
+  whyPoint1Body: {
+    ne: "पाठ्यपुस्तकको सल्लाह होइन — तपाईं जस्तै किसानले वास्तवमा के गरे भन्ने कुरा।",
+    en: "Not textbook advice — what farmers like you actually did, and what happened.",
+  },
+  whyPoint2Title: { ne: "इमानदार जानकारी", en: "Honest information" },
+  whyPoint2Body: {
+    ne: "हरेक मूल्य, योजना, र औजारमा मिति र स्रोत देखिन्छ — लुकाइएको छैन।",
+    en: "Every price, scheme, and tool shows its date and source — nothing dressed up as more certain than it is.",
+  },
+  whyPoint3Title: { ne: "जोसुकैलाई पहुँचयोग्य", en: "Open to everyone" },
+  whyPoint3Body: {
+    ne: "हेर्न लगइन चाहिँदैन। लेख्न पनि पूरा फारम भर्नु पर्दैन।",
+    en: "No login to browse. No long form to post — a name is optional, even that.",
+  },
+  exploreTitle: { ne: "अन्वेषण गर्नुहोस्", en: "Explore" },
+
+  // tools page
+  toolsTitle: { ne: "आधुनिक औजार र प्रविधि", en: "Modern tools & technology" },
+  toolsSubtitle: {
+    ne: "साना, छरिएका डाँडा र तराईका जग्गाका लागि उपयुक्त प्रविधि — किन्ने र भाडामा लिने दुवै मूल्य देखाइन्छ, किनकि धेरैको जग्गा पूरै किन्नु व्यावहारिक हुँदैन।",
+    en: "Scale-appropriate mechanization for small, fragmented hill and Terai plots — purchase and rental/service prices shown side by side, since ownership rarely pencils out at Nepal's average landholding size.",
+  },
+  scopeNepal: { ne: "🇳🇵 नेपालमा", en: "🇳🇵 In Nepal" },
+  scopeGlobal: { ne: "🌍 विश्वव्यापी / उदीयमान", en: "🌍 Global / Emerging" },
+  globalToolsNotice: {
+    ne: "🌍 यी विश्वका अन्य ठाउँमा प्रयोग हुने प्रविधिहरू हुन्, जानकारीका लागि मात्र — धेरैजसो नेपालमा अझै पुष्टि भएका छैनन्। किन्नु अघि उपलब्धता ब्याज र स्रोत जाँच्नुहोस्।",
+    en: "These are technologies used elsewhere in the world, shown for awareness — most are not yet confirmed available in Nepal. Check each item's availability badge and source before assuming it's purchasable here.",
+  },
+  noToolsYet: { ne: "अहिलेसम्म कुनै औजार सूचीकृत छैन", en: "No tools listed yet" },
+  watchVideo: { ne: "भिडियो हेर्नुहोस्", en: "Watch video" },
+  source: { ne: "स्रोत", en: "Source" },
+  unverifiedEstimate: { ne: "अपुष्ट अनुमान — भर पर्नु अघि जाँच्नुहोस्", en: "Unverified estimate — check before relying on this price" },
+  lastChecked: { ne: "अन्तिम जाँच", en: "Last checked" },
+  shareReview: { ne: "+ अनुभव लेख्नुहोस्", en: "+ Share a review" },
+  communityReviews: { ne: "समुदायको समीक्षा र अनुभव", en: "Community reviews & experiences" },
+  noReviewsYet: { ne: "अहिलेसम्म कुनै समीक्षा छैन", en: "No reviews yet" },
+  noVendorsYet: { ne: "यो औजारका लागि अहिलेसम्म कुनै विक्रेता छैन", en: "No vendors listed yet for this tool" },
+
+  // schemes page
+  schemesTitle: { ne: "सरकारी योजना निर्देशिका", en: "Government scheme directory" },
+  schemesSubtitle: {
+    ne: "बजेट चक्रसँगै अनुदान नियम फेरिन्छन् — सधैं \"अन्तिम पुष्टि\" मिति हेर्नुहोस्।",
+    en: "Subsidy and program rules change with budget cycles — always check the \"last verified\" date.",
+  },
+  mayBeOutdated: { ne: "पुरानो हुन सक्छ", en: "may be outdated" },
+  noSchemesYet: { ne: "अहिलेसम्म कुनै योजना सूचीकृत छैन", en: "No schemes listed yet" },
+
+  // prices page
+  pricesSubtitle: {
+    ne: "समुदायले पेश गरेको र हातैले अद्यावधिक गरिएको मूल्य — प्रत्येक अङ्कमा स्रोत र मिति देखिन्छ।",
+    en: "Community-submitted and manually refreshed prices — every figure shows its source and date.",
+  },
+  allCrops: { ne: "सबै बाली", en: "All crops" },
+  noPricesYet: { ne: "अहिलेसम्म मूल्य जानकारी छैन", en: "No price data yet" },
+  updated: { ne: "अद्यावधिक", en: "Updated" },
+  vsPrevious: { ne: "अघिल्लो भन्दा", en: "vs previous" },
+
+  // vendors page
+  allVendorTypes: { ne: "सबै प्रकारका विक्रेता", en: "All vendor types" },
+  noVendorsListed: { ne: "अहिलेसम्म कुनै विक्रेता सूचीकृत छैन", en: "No vendors listed yet" },
+
+  // post form
+  createPostTitle: { ne: "समुदायसँग साझा गर्नुहोस्", en: "Share with the community" },
+  postTypeLabel: { ne: "पोस्टको प्रकार", en: "Post type" },
+  cropLabel: { ne: "बाली", en: "Crop" },
+  districtLabel: { ne: "जिल्ला", en: "District" },
+  noneOption: { ne: "— कुनै छैन —", en: "— none —" },
+  titleLabel: { ne: "शीर्षक", en: "Title" },
+  descriptionLabel: { ne: "विवरण", en: "Description" },
+  photosLabel: { ne: "फोटो (रोग/किरा रिपोर्टका लागि सहयोगी)", en: "Photos (helpful for pest/disease reports)" },
+  tagsLabel: { ne: "ट्याग (अल्पविरामले छुट्याउनुहोस्)", en: "Tags (comma-separated)" },
+  guestFieldsLabel: { ne: "लगइन गर्नुभएको छैन? समस्या छैन", en: "Not signed in? No problem" },
+  submitPost: { ne: "समुदायमा पोस्ट गर्नुहोस्", en: "Post to community" },
+  postingBusy: { ne: "पोस्ट गर्दै...", en: "Posting..." },
+
+  // comments
+  addComment: { ne: "टिप्पणी वा उत्तर लेख्नुहोस्...", en: "Add a comment or answer..." },
+  send: { ne: "पठाउनुहोस्", en: "Send" },
+  noCommentsYet: { ne: "अहिलेसम्म कुनै टिप्पणी छैन। पहिलो उत्तर दिनुहोस्।", en: "No comments yet. Be the first to answer." },
+  bestAnswer: { ne: "उत्तम उत्तर", en: "Best answer" },
+  markBestAnswer: { ne: "उत्तम उत्तरको रूपमा चिन्ह लगाउनुहोस्", en: "Mark as best answer" },
+  addNameOptional: { ne: "आफ्नो नाम थप्नुहोस् (वैकल्पिक)", en: "Add your name (optional)" },
+  yourNamePlaceholder: { ne: "तपाईंको नाम (वैकल्पिक)", en: "Your name (optional)" },
+  phoneOrEmailPlaceholder: { ne: "फोन वा इमेल (वैकल्पिक, उत्तरका लागि)", en: "Phone or email (optional, for replies)" },
+
+  // login
+  joinTitle: { ne: "कृषिSearch मा सामेल हुनुहोस्", en: "Join Krisearch" },
+  joinSubtitle: { ne: "फोन नम्बरले लगइन गर्नुहोस् — इमेल, गुगल र फेसबुक पनि प्रयोग गर्न सकिन्छ।", en: "Sign in with your phone number — email and Google/Facebook work too." },
+  continueGoogle: { ne: "गुगलबाट जारी राख्नुहोस्", en: "Continue with Google" },
+  continueFacebook: { ne: "फेसबुकबाट जारी राख्नुहोस्", en: "Continue with Facebook" },
+  or: { ne: "वा", en: "or" },
+
+  // feedback widget
+  feedbackButton: { ne: "प्रतिक्रिया", en: "Feedback" },
+  feedbackTitle: { ne: "प्रश्न, समस्या, वा सुझाव?", en: "Question, problem, or idea?" },
+  feedbackSubtitle: { ne: "खाता चाहिँदैन — बस भन्नुहोस्।", en: "No account needed — just tell us." },
+  feedbackPlaceholder: { ne: "मनमा के छ?", en: "What's on your mind?" },
+  feedbackNamePlaceholder: { ne: "नाम (वैकल्पिक)", en: "Name (optional)" },
+  feedbackContactPlaceholder: { ne: "फोन/इमेल (वैकल्पिक)", en: "Phone/email (optional)" },
+  feedbackSend: { ne: "पठाउनुहोस्", en: "Send" },
+  feedbackSending: { ne: "पठाउँदै...", en: "Sending..." },
+  feedbackCancel: { ne: "रद्द गर्नुहोस्", en: "Cancel" },
+  feedbackThanks: { ne: "धन्यवाद! हामी हरेक सन्देश पढ्छौं।", en: "Thank you! We read every message." },
+  feedbackClose: { ne: "बन्द गर्नुहोस्", en: "Close" },
+
+  // AI verdict
+  aiSafe: { ne: "AI: सुरक्षित देखिन्छ", en: "AI: looks safe" },
+  aiCaution: { ne: "AI: सावधानी अपनाउनुहोस्", en: "AI: use caution" },
+  aiDanger: { ne: "AI: हानिकारक हुन सक्छ", en: "AI: possibly harmful" },
+  aiUnverified: { ne: "AI: अपुष्ट", en: "AI: unverified" },
 } as const;
 
 export type DictionaryKey = keyof typeof dictionary;

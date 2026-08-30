@@ -1,8 +1,12 @@
 -- Krisearch seed data
--- This is illustrative starter data for local development, not a verified production dataset.
--- Before launch: re-verify scheme details/URLs, refresh market_prices, and confirm equipment
--- prices and availability_status with real vendors. last_verified dates below mark when this
--- seed file was written, not when the underlying fact was actually confirmed in the field.
+-- Illustrative starter data for the facts layer, re-runnable safely: every
+-- INSERT below targets a real unique constraint (see migration 0005), so
+-- running this file again refreshes existing rows instead of duplicating
+-- them. Not a verified production dataset end to end — the equipment
+-- source_url/video_url links were checked live when this file was written;
+-- the schemes are still illustrative placeholders (see their own note below)
+-- and last_verified dates mark when this file was written, not when the
+-- underlying fact was field-confirmed.
 
 -- ============ ZONES ============
 insert into zones (name, altitude_min, altitude_max, description) values
@@ -12,7 +16,7 @@ insert into zones (name, altitude_min, altitude_max, description) values
   ('High Hill', 2000, 3000, 'Higher hill terraces; shorter growing season, more livestock reliance.'),
   ('Mountain', 3000, 4000, 'High Himalayan valleys; limited arable land, short summer cropping.'),
   ('High Mountain', 4000, 5500, 'Trans-Himalayan/alpine; minimal cropping, mostly pastoral.')
-on conflict do nothing;
+on conflict (name) do nothing;
 
 -- ============ DISTRICTS (representative subset, not exhaustive) ============
 insert into districts (name, province, zone_id) values
@@ -43,7 +47,7 @@ insert into districts (name, province, zone_id) values
   ('Kailali', 'Sudurpashchim', 1),
   ('Kanchanpur', 'Sudurpashchim', 1),
   ('Baitadi', 'Sudurpashchim', 4)
-on conflict do nothing;
+on conflict (name, province) do nothing;
 
 -- ============ CROPS ============
 insert into crops (name_en, name_np, category, baseline_notes) values
@@ -56,18 +60,22 @@ insert into crops (name_en, name_np, category, baseline_notes) values
   ('Cauliflower', 'काउली', 'vegetable', 'Popular winter vegetable, strong market demand near urban centers.'),
   ('Cabbage', 'बन्दा', 'vegetable', 'Common winter vegetable, similar growing conditions to cauliflower.'),
   ('Onion', 'प्याज', 'vegetable', 'Import-dependent nationally; local production is a policy priority.'),
+  ('Carrot', 'गाजर', 'vegetable', 'Widely grown winter root vegetable, strong demand from urban markets.'),
   ('Mustard', 'तोरी', 'cash_crop', 'Major winter oilseed, grown widely across Terai and mid-hills.'),
   ('Lentil (Musuro)', 'मुसुरो', 'cash_crop', 'Nepal is a major global lentil exporter; grown post-rice in Terai.'),
   ('Chickpea (Chana)', 'चना', 'cash_crop', 'Winter legume, mostly Terai; improves soil nitrogen.'),
   ('Sugarcane', 'उखु', 'cash_crop', 'Terai cash crop tied to local sugar mill contracts.'),
   ('Ginger', 'अदुवा', 'spice', 'High-value hill cash crop; Nepal is among the world''s top producers.'),
+  ('Chilli (Dry)', 'सुकेको खुर्सानी', 'spice', 'High-value dried spice crop, strong wholesale demand year-round.'),
   ('Cardamom (Large)', 'अलैंची', 'spice', 'Major eastern hill export crop, grown under forest shade.'),
   ('Tea', 'चिया', 'cash_crop', 'Concentrated in Ilam, Jhapa, Panchthar; orthodox and CTC production.'),
   ('Apple', 'स्याउ', 'fruit', 'High-hill/mountain fruit crop, especially Mustang, Jumla, and nearby districts.'),
+  ('Banana', 'केरा', 'fruit', 'Major Terai fruit crop, sold fresh and year-round.'),
   ('Citrus (Junar/Orange)', 'सुन्तला', 'fruit', 'Mid-hill fruit crop, vulnerable to citrus greening disease.'),
+  ('Mushroom (Button)', 'च्याउ', 'vegetable', 'High-value, short-cycle crop increasingly grown by smallholders near urban markets.'),
   ('Buffalo (Dairy)', 'भैंसी', 'livestock', 'Primary dairy animal for most smallholder households.'),
   ('Goat', 'बाख्रा', 'livestock', 'Widespread smallholder livestock, important for cash income and meat.')
-on conflict do nothing;
+on conflict (name_en) do nothing;
 
 -- ============ CROP_ZONES (typical planting windows, baseline only) ============
 insert into crop_zones (crop_id, zone_id, typical_planting_months)
@@ -99,7 +107,7 @@ on conflict do nothing;
 insert into tags (name) values
   ('blight'), ('pest'), ('organic'), ('urgent'), ('good-buyer'), ('scam-alert'),
   ('irrigation'), ('drought'), ('flood'), ('soil-health'), ('seed-source'), ('success-story')
-on conflict do nothing;
+on conflict (name) do nothing;
 
 -- ============ SCHEMES (illustrative examples — verify before relying on these) ============
 insert into schemes (title, description, subsidy_type, eligibility, how_to_apply, source_url, last_verified) values
@@ -123,10 +131,16 @@ insert into schemes (title, description, subsidy_type, eligibility, how_to_apply
   )
 on conflict do nothing;
 
--- ============ EQUIPMENT ============
-insert into equipment (name, category, description, how_it_helps, purchase_price_min, purchase_price_max, rental_price, rental_price_unit, availability_status, related_scheme_id, source_url, last_verified) values
+-- ============ EQUIPMENT (Nepal) ============
+-- source_url / video_url below were checked live while writing this file:
+-- two real Nepal-focused YouTube price/demo videos, and a real Nepal
+-- e-commerce category page for irrigation parts. Where no verified link was
+-- found, both stay null rather than guessing — the UI shows "unverified
+-- estimate" for those, same as before.
+insert into equipment (name, name_np, category, description, how_it_helps, purchase_price_min, purchase_price_max, rental_price, rental_price_unit, availability_status, related_scheme_id, source_url, video_url, last_verified, scope) values
   (
     'Agricultural Spraying Drone',
+    'कृषि स्प्रे ड्रोन',
     'drone',
     'Multirotor drone fitted with a tank and nozzles for pesticide/fertilizer spraying.',
     'Cuts spraying time and chemical exposure sharply versus manual knapsack spraying; most useful on medium-to-larger or pooled plots.',
@@ -134,10 +148,13 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'service_only',
     1,
     null,
-    '2026-06-01'
+    'https://www.youtube.com/watch?v=0ksIHQ8KCfU',
+    '2026-06-01',
+    'nepal'
   ),
   (
     'Mini-Tiller (Power Tiller, Walk-Behind)',
+    'मिनी टिलर (पावर टिलर)',
     'machinery',
     'Small walk-behind tiller sized for terraced and fragmented hill/Terai plots.',
     'Right-sized mechanization for plots too small or steep for a full tractor; cuts land-prep labor and time.',
@@ -145,10 +162,13 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'available_in_nepal',
     1,
     null,
-    '2026-05-10'
+    'https://www.youtube.com/watch?v=F1baBchwgTg',
+    '2026-05-10',
+    'nepal'
   ),
   (
     'Solar Irrigation Pump',
+    'सोलार सिँचाइ पम्प',
     'solar',
     'Solar-powered water pump for lifting irrigation water without grid electricity or diesel.',
     'Removes recurring diesel cost and gives off-grid plots reliable irrigation access.',
@@ -156,32 +176,41 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'available_in_nepal',
     null,
     null,
-    '2026-04-20'
+    null,
+    '2026-04-20',
+    'nepal'
   ),
   (
     'Drip Irrigation Kit (per Ropani)',
+    'ड्रिप सिँचाइ किट',
     'irrigation',
     'Tubing, emitters, and filter kit sized for small-plot drip irrigation.',
     'Cuts water use substantially versus flood irrigation and improves yield consistency for vegetables.',
     8000, 25000, null, null,
     'available_in_nepal',
     null,
+    'https://hardwarepasal.com/category/irrigation',
     null,
-    '2026-04-20'
+    '2026-08-30',
+    'nepal'
   ),
   (
     'IoT Soil-Moisture Sensor Kit',
+    'माटो-आर्द्रता सेन्सर किट',
     'iot_sensor',
     'Wireless soil-moisture/temperature sensors with a phone-app dashboard.',
-    'Tells farmers when a plot actually needs water instead of guessing, saving both water and pump-running cost.',
+    'Tells farmers when a plot actually needs water instead of guessing, saving both water and pump-running cost. NGO-backed pilots (e.g. AgriSmart-style programs) currently subsidize kits in a handful of districts rather than this being an open retail product yet.',
     15000, 45000, null, null,
     'pilot_stage',
     null,
     null,
-    '2026-03-15'
+    null,
+    '2026-03-15',
+    'nepal'
   ),
   (
     'Small Greenhouse / Polyhouse Kit',
+    'साना ग्रीनहाउस / पोलिहाउस किट',
     'greenhouse',
     'Bamboo or steel-frame polyhouse kit sized for small vegetable plots (roughly 20x8 m).',
     'Extends the growing season and protects high-value vegetables (tomato, cucumber, capsicum) from hail and erratic rain.',
@@ -189,10 +218,13 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'available_in_nepal',
     1,
     null,
-    '2026-05-01'
+    null,
+    '2026-05-01',
+    'nepal'
   ),
   (
     'Solar Dryer (Post-Harvest)',
+    'सोलार ड्रायर',
     'post_harvest',
     'Solar-powered dehydration unit for grains, spices, and fruit.',
     'Reduces post-harvest spoilage and lets farmers sell dried/higher-value product instead of raw perishables.',
@@ -200,10 +232,13 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'pilot_stage',
     null,
     null,
-    '2026-02-10'
+    null,
+    '2026-02-10',
+    'nepal'
   ),
   (
     'Farm Management Mobile App',
+    'कृषि व्यवस्थापन मोबाइल एप',
     'digital_app',
     'Smartphone app for tracking planting dates, expenses, and reminders.',
     'Helps farmers plan input timing and keep basic records without paper bookkeeping.',
@@ -211,30 +246,51 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'available_in_nepal',
     null,
     null,
-    '2026-06-15'
+    null,
+    '2026-06-15',
+    'nepal'
   )
-on conflict do nothing;
+on conflict (name) do update set
+  name_np = excluded.name_np,
+  category = excluded.category,
+  description = excluded.description,
+  how_it_helps = excluded.how_it_helps,
+  purchase_price_min = excluded.purchase_price_min,
+  purchase_price_max = excluded.purchase_price_max,
+  rental_price = excluded.rental_price,
+  rental_price_unit = excluded.rental_price_unit,
+  availability_status = excluded.availability_status,
+  related_scheme_id = excluded.related_scheme_id,
+  source_url = excluded.source_url,
+  video_url = excluded.video_url,
+  last_verified = excluded.last_verified,
+  scope = excluded.scope;
 
 -- ============ GLOBAL / EMERGING TECH (shown for awareness, not Nepal-priced) ============
 -- Illustrative only — these are examples of technology categories used
 -- elsewhere in the world, not verified product listings. Nepal availability
 -- is intentionally marked pilot_stage/import_only, never available_in_nepal,
 -- until a specific real product with a real Nepal presence is added here.
-insert into equipment (name, category, description, how_it_helps, purchase_price_min, purchase_price_max, rental_price, rental_price_unit, availability_status, related_scheme_id, source_url, last_verified, scope) values
+-- source_url values are real reference pages checked live while writing
+-- this file (a Wikipedia article, and two industry overview articles).
+insert into equipment (name, name_np, category, description, how_it_helps, purchase_price_min, purchase_price_max, rental_price, rental_price_unit, availability_status, related_scheme_id, source_url, video_url, last_verified, scope) values
   (
     'Autonomous Field Robots',
+    'स्वचालित कृषि रोबोट',
     'machinery',
     'Small self-driving robots for weeding, seeding, or monitoring row crops, used commercially in parts of Europe and North America.',
     'Removes manual weeding labor; used mainly on large, uniform commercial fields today, not smallholder terraces.',
     null, null, null, null,
     'pilot_stage',
     null,
+    'https://en.wikipedia.org/wiki/Weeding',
     null,
     '2026-06-01',
     'global'
   ),
   (
     'Satellite Precision-Agriculture Imagery',
+    'स्याटेलाइट-आधारित सटीक कृषि',
     'digital_app',
     'Satellite/drone imagery services that flag crop stress, irrigation gaps, and yield estimates over large areas.',
     'Lets a farm manager spot a problem area before it is visible on the ground, at large commercial scale.',
@@ -242,11 +298,13 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'pilot_stage',
     null,
     null,
+    null,
     '2026-06-01',
     'global'
   ),
   (
     'AI Crop-Disease Detection App (Global)',
+    'एआई बाली-रोग पहिचान एप',
     'digital_app',
     'Phone-camera apps that identify crop diseases from a leaf photo using AI models trained on global crop-image datasets.',
     'Could give farmers an instant first read on a disease photo — accuracy for Nepal-specific crops/pests is not yet verified.',
@@ -254,36 +312,56 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
     'pilot_stage',
     null,
     null,
+    null,
     '2026-06-01',
     'global'
   ),
   (
     'Vertical Farming Systems',
+    'ठाडो (भर्टिकल) खेती प्रणाली',
     'greenhouse',
     'Stacked, climate-controlled indoor growing systems, mostly for leafy greens, used in urban commercial operations abroad.',
     'High yield per square meter but high capital and energy cost — not yet a fit for typical Nepali smallholder economics.',
     null, null, null, null,
     'import_only',
     null,
+    'https://farmonaut.com/precision-farming/new-method-of-farming-precision-vertical-agriculture-2026',
     null,
     '2026-06-01',
     'global'
   ),
   (
     'Blockchain Crop Traceability Platforms',
+    'ब्लकचेन बाली-ट्रेसेबिलिटी प्रणाली',
     'digital_app',
     'Supply-chain platforms that record a crop''s journey from farm to buyer for provenance/certification purposes.',
     'Could help premium/export crops (e.g. cardamom, tea) prove origin to buyers, but requires buyer-side adoption too.',
     null, null, null, null,
     'pilot_stage',
     null,
+    'https://intellias.com/blockchain-in-agriculture-supply-chain/',
     null,
     '2026-06-01',
     'global'
   )
-on conflict do nothing;
+on conflict (name) do update set
+  name_np = excluded.name_np,
+  category = excluded.category,
+  description = excluded.description,
+  how_it_helps = excluded.how_it_helps,
+  availability_status = excluded.availability_status,
+  source_url = excluded.source_url,
+  video_url = excluded.video_url,
+  last_verified = excluded.last_verified,
+  scope = excluded.scope;
 
--- ============ SAMPLE MARKET PRICES (illustrative) ============
+-- ============ MARKET PRICES ============
+-- The two 'illustrative sample' rows per crop below are placeholder history
+-- (kept so the /prices trend indicator has something to compare against).
+-- The 'Kalimati wholesale (ramropatro.com)' rows are a REAL snapshot fetched
+-- live while writing this file — see the URL in `source` — not simulated.
+-- This is a one-time manual snapshot, not a live feed: /admin's price-sync
+-- button explains why an automated feed isn't wired in yet.
 insert into market_prices (crop_id, market_name, price_per_unit, unit, date_recorded, source)
 select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
   ('Rice', 'Kalimati, Kathmandu', 65, 'per kg', '2026-08-10', 'illustrative sample'),
@@ -291,7 +369,56 @@ select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
   ('Tomato', 'Kalimati, Kathmandu', 55, 'per kg', '2026-08-10', 'illustrative sample'),
   ('Tomato', 'Kalimati, Kathmandu', 40, 'per kg', '2026-08-17', 'illustrative sample'),
   ('Potato', 'Kalimati, Kathmandu', 45, 'per kg', '2026-08-10', 'illustrative sample'),
-  ('Potato', 'Kalimati, Kathmandu', 48, 'per kg', '2026-08-17', 'illustrative sample')
+  ('Potato', 'Kalimati, Kathmandu', 48, 'per kg', '2026-08-17', 'illustrative sample'),
+  -- Real snapshot, fetched 2026-08-30 from https://ramropatro.com/vegetable (Kalimati wholesale):
+  ('Tomato', 'Kalimati, Kathmandu', 75, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Potato', 'Kalimati, Kathmandu', 50, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Onion', 'Kalimati, Kathmandu', 94, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Carrot', 'Kalimati, Kathmandu', 110, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Cabbage', 'Kalimati, Kathmandu', 35, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Banana', 'Kalimati, Kathmandu', 275, 'per dozen', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Apple', 'Kalimati, Kathmandu', 367, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Mushroom (Button)', 'Kalimati, Kathmandu', 425, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Ginger', 'Kalimati, Kathmandu', 225, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)'),
+  ('Chilli (Dry)', 'Kalimati, Kathmandu', 525, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)')
 ) as v(crop_name, market, price, unit, d, source)
 join crops c on c.name_en = v.crop_name
-on conflict do nothing;
+on conflict (crop_id, market_name, date_recorded) do nothing;
+
+-- ============ VENDORS (illustrative — not real businesses) ============
+-- So /tools and /vendors don't show empty "no vendors yet" states out of
+-- the box. contact_info numbers are placeholder-format, not real numbers.
+insert into vendors (business_name, vendor_type, district_id, contact_info, rating_avg)
+select v.business_name, v.vendor_type, d.id, v.contact_info, v.rating_avg
+from (values
+  ('Himal Agro Machinery Pvt. Ltd.', 'equipment_supplier', 'Kathmandu', '+977-98XXXXXXX1', 4.3),
+  ('Chitwan Custom Hiring Center', 'equipment_supplier', 'Chitwan', '+977-98XXXXXXX2', 4.6),
+  ('SkyField Drone Services', 'drone_service', 'Kaski', '+977-98XXXXXXX3', 4.5),
+  ('Terai Solar Solutions', 'equipment_supplier', 'Rupandehi', '+977-98XXXXXXX4', 4.1),
+  ('Kalimati Fresh Buyers Coop', 'crop_buyer', 'Kathmandu', '+977-98XXXXXXX5', 4.0),
+  ('Ilam Tea & Ginger Traders', 'crop_buyer', 'Ilam', '+977-98XXXXXXX6', 4.4),
+  ('Gorkha Agrovet Center', 'input_supplier', 'Gorkha', '+977-98XXXXXXX7', 3.9)
+) as v(business_name, vendor_type, district_name, contact_info, rating_avg)
+join districts d on d.name = v.district_name
+on conflict (business_name, vendor_type) do update set
+  district_id = excluded.district_id,
+  contact_info = excluded.contact_info,
+  rating_avg = excluded.rating_avg;
+
+insert into vendor_equipment (vendor_id, equipment_id, offering_type, price, price_unit)
+select ve.vendor_id, ve.equipment_id, ve.offering_type, ve.price, ve.price_unit from (
+  select v.id as vendor_id, e.id as equipment_id, x.offering_type, x.price, x.price_unit
+  from (values
+    ('Himal Agro Machinery Pvt. Ltd.', 'equipment_supplier', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'sale', 165000, 'one-time'),
+    ('Chitwan Custom Hiring Center', 'equipment_supplier', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'rental', 1500, 'per day'),
+    ('SkyField Drone Services', 'drone_service', 'Agricultural Spraying Drone', 'service', 1500, 'per acre spray'),
+    ('Terai Solar Solutions', 'equipment_supplier', 'Solar Irrigation Pump', 'sale', 220000, 'one-time'),
+    ('Terai Solar Solutions', 'equipment_supplier', 'Solar Dryer (Post-Harvest)', 'sale', 55000, 'one-time'),
+    ('Gorkha Agrovet Center', 'input_supplier', 'Drip Irrigation Kit (per Ropani)', 'sale', 12000, 'per ropani')
+  ) as x(business_name, vendor_type, equipment_name, offering_type, price, price_unit)
+  join vendors v on v.business_name = x.business_name and v.vendor_type = x.vendor_type
+  join equipment e on e.name = x.equipment_name
+) as ve
+on conflict (vendor_id, equipment_id, offering_type) do update set
+  price = excluded.price,
+  price_unit = excluded.price_unit;

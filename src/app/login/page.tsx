@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Tab = "phone" | "email";
 type Step = "enter" | "verify";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("phone");
   const [step, setStep] = useState<Step>("enter");
@@ -100,11 +102,11 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="mb-1 text-xl font-bold">{isGuestUpgrade ? "Save your posts to an account" : "Join Krisearch"}</h1>
+      <h1 className="mb-1 text-xl font-bold">{isGuestUpgrade ? "Save your posts to an account" : t("joinTitle")}</h1>
       <p className="mb-5 text-sm text-neutral-500">
         {isGuestUpgrade
           ? "You've been posting as a guest — verify a phone or email to keep your name and history across devices."
-          : "Sign in with your phone number — email and Google/Facebook work too."}
+          : t("joinSubtitle")}
       </p>
 
       {!isGuestUpgrade && (
@@ -113,21 +115,21 @@ export default function LoginPage() {
             type="button"
             onClick={() => signInWithOAuth("google")}
             disabled={busy}
-            className="flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white py-2.5 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+            className="flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white py-2.5 text-sm font-medium shadow-sm transition-shadow hover:shadow-md hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           >
-            🔍 Continue with Google
+            🔍 {t("continueGoogle")}
           </button>
           <button
             type="button"
             onClick={() => signInWithOAuth("facebook")}
             disabled={busy}
-            className="flex items-center justify-center gap-2 rounded-full bg-[#1877F2] py-2.5 text-sm font-medium text-white hover:bg-[#1567d3] disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-full bg-[#1877F2] py-2.5 text-sm font-medium text-white shadow-sm transition-shadow hover:shadow-md hover:bg-[#1567d3] disabled:opacity-50"
           >
-            📘 Continue with Facebook
+            📘 {t("continueFacebook")}
           </button>
           <div className="my-1 flex items-center gap-2 text-xs text-neutral-400">
             <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
-            or
+            {t("or")}
             <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
           </div>
         </div>

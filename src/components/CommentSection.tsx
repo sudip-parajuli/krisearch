@@ -7,6 +7,7 @@ import { ensureSession, applyGuestIdentity } from "@/lib/auth";
 import { ReportButton } from "./ReportButton";
 import { AIVerdictBadge } from "./AIVerdictBadge";
 import { GuestIdentityFields } from "./GuestIdentityFields";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Comment, Profile } from "@/types/database";
 
 type CommentWithAuthor = Comment & {
@@ -22,6 +23,7 @@ export function CommentSection({
   postAuthorId: string | null;
   comments: CommentWithAuthor[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -85,16 +87,16 @@ export function CommentSection({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={2}
-            placeholder="Add a comment or answer..."
+            placeholder={t("addComment")}
             className="flex-1 resize-none rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
           />
           <button
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="self-end rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="self-end rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-shadow hover:shadow-md hover:bg-green-700 disabled:opacity-50"
           >
-            Send
+            {t("send")}
           </button>
         </div>
         {!viewerId && (
@@ -103,7 +105,7 @@ export function CommentSection({
             onClick={() => setShowGuestFields((s) => !s)}
             className="self-start text-xs text-neutral-400 underline"
           >
-            {showGuestFields ? "Hide name/contact" : "Add your name (optional)"}
+            {showGuestFields ? "Hide name/contact" : t("addNameOptional")}
           </button>
         )}
         {showGuestFields && (
@@ -112,7 +114,7 @@ export function CommentSection({
       </div>
 
       {topLevel.length === 0 ? (
-        <p className="text-sm text-neutral-400">No comments yet. Be the first to answer.</p>
+        <p className="text-sm text-neutral-400">{t("noCommentsYet")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {[...topLevel].sort((a, b) => Number(b.is_best_answer) - Number(a.is_best_answer)).map((c) => (
@@ -151,6 +153,7 @@ function CommentRow({
   isPostAuthor: boolean;
   onMarkBest: (id: string) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
@@ -162,7 +165,7 @@ function CommentRow({
         <span>{new Date(comment.created_at).toLocaleDateString()}</span>
         {comment.is_best_answer && (
           <span className="rounded-full bg-green-600 px-2 py-0.5 text-[10px] font-semibold text-white">
-            ✓ Best answer
+            ✓ {t("bestAnswer")}
           </span>
         )}
         <AIVerdictBadge verdict={comment.ai_verdict} rationale={comment.ai_rationale} />
@@ -176,7 +179,7 @@ function CommentRow({
             onClick={() => onMarkBest(comment.id)}
             className="text-xs text-green-700 hover:underline dark:text-green-400"
           >
-            Mark as best answer
+            {t("markBestAnswer")}
           </button>
         )}
       </div>

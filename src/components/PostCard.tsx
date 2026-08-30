@@ -7,7 +7,7 @@ import type { PostRow } from "@/lib/data";
 
 export function PostCard({ post }: { post: PostRow }) {
   return (
-    <div className="flex gap-3 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
       <VoteButtons postId={post.id} initialScore={post.vote_score} />
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex flex-wrap items-center gap-2">

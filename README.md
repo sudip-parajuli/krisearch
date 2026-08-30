@@ -46,13 +46,40 @@ run the files in [supabase/migrations/](supabase/migrations/) **in order**:
    (+ the trigger that stops users forging their own "safe" verdict),
    best-answer marking, the `feedback` table, and the tools directory's
    `scope` (nepal/global) column
+5. `0005_content_and_richer_tools.sql` — real unique constraints on every
+   facts-layer table's natural key (fixes a bug: `seed.sql` previously used
+   `on conflict do nothing` with no real target, so re-running it would have
+   silently duplicated every zone/district/crop/equipment row), plus
+   `equipment.name_np` (Nepali name) and `equipment.video_url`
 
-Then optionally load [supabase/seed.sql](supabase/seed.sql) for illustrative
-starter data (zones, districts, ~20 crops, sample equipment/schemes/prices,
-plus a handful of global/emerging-tech entries). **It's illustrative, not
-verified production data** — re-check scheme details and equipment
-prices/availability before relying on them; see the comment at the top of
-the seed file.
+Then load [supabase/seed.sql](supabase/seed.sql) — safe to re-run any time
+now that `0005` gives it real upsert targets. It has zones, districts, ~24
+crops, Nepal + global-tech equipment (with real source/video links checked
+live while writing it — see the file's comments for exactly what's
+verified vs. estimated), illustrative schemes, sample vendors, and a mix of
+placeholder + one **real, dated market-price snapshot** (Kalimati wholesale,
+fetched live from ramropatro.com — see the comment above that section).
+**Still not a verified production dataset end to end** — re-check scheme
+details before relying on them.
+
+### Demo content (optional, for a non-empty first impression)
+
+An empty platform doesn't tell a new visitor anything, so
+[scripts/seed-demo.mjs](scripts/seed-demo.mjs) creates ~10 realistic Nepali
+farmer accounts (via the Supabase Admin API, not a raw `auth.users` insert)
+and ~18 posts / ~10 comments / dozens of votes across every post type and
+several districts/crops — written in Nepali, the way farmers here would
+actually write. Run it after migrations `0001`–`0004` (it doesn't need
+`0005`):
+
+```bash
+node scripts/seed-demo.mjs      # idempotent — safe to re-run
+node scripts/remove-demo.mjs    # removes everything it created
+```
+
+Every demo account uses an `@demo.krisearch.local` email so it's always
+identifiable and fully removable later; they're not meant to be real,
+usable logins.
 
 ### 3. Enable anonymous sign-ins (guest posting)
 
@@ -224,3 +251,20 @@ account, not even the silent guest sign-in.
   post's comments only) rather than adding column-level `GRANT`s for this
   MVP.
 - **Market price sync**: honestly unwired — see setup step 7 above.
+- **Language coverage**: the dictionary ([lib/i18n/dictionary.ts](src/lib/i18n/dictionary.ts))
+  covers the landing page, feed, tools (list + detail), crops, schemes,
+  prices, vendors, post/comment forms, login, and the feedback widget — the
+  highest-traffic surfaces. `/post/[id]`'s own chrome (not its user-authored
+  content, which is whatever language the poster wrote in) and `/profile/[id]`
+  still have a few hardcoded English strings; `/admin` is intentionally
+  English-only as an internal tool. Add new UI text as a dictionary key (both
+  `ne` and `en`) rather than a hardcoded string, and wire it in with
+  `useLanguage()`'s `t()`.
+- **Visual pass**: cards use a consistent `rounded-2xl` + `shadow-sm` +
+  hover-elevate treatment, the homepage now shows real live counts (posts,
+  members, districts, crops — via `getPlatformStats()`) instead of just
+  static copy, and the background/header both got a less "default Tailwind"
+  treatment. This was reviewed via `next build` + HTTP smoke checks in this
+  environment (no headless-browser screenshot tool was available here) —
+  worth a quick look at `npm run dev` yourself to confirm it reads the way
+  you want.
