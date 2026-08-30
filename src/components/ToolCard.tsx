@@ -42,6 +42,13 @@ export function ToolCard({ equipment }: { equipment: Equipment }) {
           </span>
         )}
       </div>
+      <p className="mt-1 text-[11px] text-neutral-400">
+        {equipment.source_url ? (
+          <>Source: {new URL(equipment.source_url).hostname.replace(/^www\./, "")}</>
+        ) : (
+          <>Source: unverified estimate — check before relying on this price</>
+        )}
+      </p>
     </Link>
   );
 }

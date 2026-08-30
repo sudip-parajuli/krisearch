@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ensureSession } from "@/lib/auth";
 
 /**
  * Reddit-style up/down voting for a post or a comment (pass one id, not both).
@@ -20,7 +20,6 @@ export function VoteButtons({
   commentId?: string;
   initialScore: number;
 }) {
-  const router = useRouter();
   const [score, setScore] = useState(initialScore);
   const [myVote, setMyVote] = useState<1 | -1 | 0>(0);
   const [busy, setBusy] = useState(false);
@@ -30,12 +29,14 @@ export function VoteButtons({
     setBusy(true);
     const supabase = createClient();
 
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
+    let user;
+    try {
+      user = await ensureSession(supabase); // silently starts a guest session if needed
+    } catch {
       setBusy(false);
-      router.push("/login");
       return;
     }
+    const userData = { user };
 
     let query = supabase.from("votes").select("id, value").eq("user_id", userData.user.id);
     query = postId ? query.eq("post_id", postId).is("comment_id", null) : query.eq("comment_id", commentId!).is("post_id", null);

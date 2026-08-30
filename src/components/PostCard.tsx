@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PostTypeBadge } from "./PostTypeBadge";
 import { VoteButtons } from "./VoteButtons";
+import { AIVerdictBadge } from "./AIVerdictBadge";
 import { slugify } from "@/lib/slug";
 import type { PostRow } from "@/lib/data";
 
@@ -19,6 +20,7 @@ export function PostCard({ post }: { post: PostRow }) {
           {post.districts && (
             <span className="text-xs text-neutral-400">📍 {post.districts.name}</span>
           )}
+          <AIVerdictBadge verdict={post.ai_verdict} rationale={post.ai_rationale} />
         </div>
         <Link href={`/post/${post.id}`} className="block">
           <h3 className="font-semibold text-neutral-900 hover:text-green-700 dark:text-neutral-100 dark:hover:text-green-400">

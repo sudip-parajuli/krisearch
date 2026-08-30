@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureSession, applyGuestIdentity } from "@/lib/auth";
+import { GuestIdentityFields } from "./GuestIdentityFields";
 import type { Crop, District, PostType, Tag } from "@/types/database";
 
 const postTypeOptions: { value: PostType; label: string; icon: string }[] = [
@@ -35,6 +37,8 @@ export function NewPostForm({
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState("");
+  const [guestContact, setGuestContact] = useState("");
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
@@ -42,14 +46,17 @@ export function NewPostForm({
     setUploading(true);
     setError(null);
     const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      router.push("/login");
+    const user = await ensureSession(supabase).catch((err) => {
+      setError(err.message);
+      return null;
+    });
+    if (!user) {
+      setUploading(false);
       return;
     }
 
     for (const file of Array.from(files)) {
-      const path = `${userData.user.id}/${Date.now()}-${file.name}`;
+      const path = `${user.id}/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from("post-images").upload(path, file);
       if (uploadError) {
         setError(uploadError.message);
@@ -70,16 +77,21 @@ export function NewPostForm({
     setSubmitting(true);
     setError(null);
     const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      router.push("/login");
+
+    let user;
+    try {
+      user = await ensureSession(supabase); // no login screen — starts a guest session if needed
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't start a session.");
+      setSubmitting(false);
       return;
     }
+    await applyGuestIdentity(supabase, user.id, { name: guestName, contact: guestContact });
 
     const { data: post, error: insertError } = await supabase
       .from("posts")
       .insert({
-        author_id: userData.user.id,
+        author_id: user.id,
         type,
         crop_id: cropId ? Number(cropId) : null,
         district_id: districtId ? Number(districtId) : null,
@@ -111,6 +123,14 @@ export function NewPostForm({
         await supabase.from("post_tags").insert({ post_id: post.id, tag_id: tagId });
       }
     }
+
+    // Fire-and-forget AI safety check — never blocks navigation, and a
+    // missing/failed check just leaves the post with no badge, not an error.
+    fetch("/api/ai/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "post", id: post.id }),
+    }).catch(() => {});
 
     router.push(`/post/${post.id}`);
     router.refresh();
@@ -215,6 +235,11 @@ export function NewPostForm({
           className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
           placeholder="blight, urgent, organic"
         />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium">Not signed in? No problem</label>
+        <GuestIdentityFields name={guestName} onNameChange={setGuestName} contact={guestContact} onContactChange={setGuestContact} />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

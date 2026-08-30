@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,23 +16,57 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isGuestUpgrade, setIsGuestUpgrade] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.is_anonymous) setIsGuestUpgrade(true);
+    });
+  }, []);
 
   async function ensureProfile(userId: string, fallbackName: string) {
     const supabase = createClient();
     const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).maybeSingle();
     if (!existing) {
       await supabase.from("profiles").insert({ id: userId, display_name: fallbackName, role: "farmer" });
+    } else {
+      // Guest upgrading to a verified identity — drop the guest flag.
+      await supabase.from("profiles").update({ is_guest: false }).eq("id", userId);
     }
+  }
+
+  async function signInWithOAuth(provider: "google" | "facebook") {
+    setBusy(true);
+    setError(null);
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+    // On success the browser navigates away to the provider — nothing more to do here.
   }
 
   async function sendCode() {
     setBusy(true);
     setError(null);
     const supabase = createClient();
-    const { error: err } =
-      tab === "phone"
+
+    // If we already have a guest (anonymous) session, link a real phone/email
+    // to it instead of starting a brand-new account — this keeps the guest's
+    // existing posts/votes attributed to the same profile id.
+    const { error: err } = isGuestUpgrade
+      ? tab === "phone"
+        ? await supabase.auth.updateUser({ phone })
+        : await supabase.auth.updateUser({ email })
+      : tab === "phone"
         ? await supabase.auth.signInWithOtp({ phone })
         : await supabase.auth.signInWithOtp({ email });
+
     setBusy(false);
     if (err) {
       setError(err.message);
@@ -45,10 +79,15 @@ export default function LoginPage() {
     setBusy(true);
     setError(null);
     const supabase = createClient();
-    const { data, error: err } =
-      tab === "phone"
+
+    const { data, error: err } = isGuestUpgrade
+      ? tab === "phone"
+        ? await supabase.auth.verifyOtp({ phone, token: code, type: "phone_change" })
+        : await supabase.auth.verifyOtp({ email, token: code, type: "email_change" })
+      : tab === "phone"
         ? await supabase.auth.verifyOtp({ phone, token: code, type: "sms" })
         : await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+
     setBusy(false);
     if (err || !data.user) {
       setError(err?.message ?? "Invalid code.");
@@ -61,8 +100,38 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="mb-1 text-xl font-bold">Join Krisearch</h1>
-      <p className="mb-5 text-sm text-neutral-500">Sign in with your phone number — email works too.</p>
+      <h1 className="mb-1 text-xl font-bold">{isGuestUpgrade ? "Save your posts to an account" : "Join Krisearch"}</h1>
+      <p className="mb-5 text-sm text-neutral-500">
+        {isGuestUpgrade
+          ? "You've been posting as a guest — verify a phone or email to keep your name and history across devices."
+          : "Sign in with your phone number — email and Google/Facebook work too."}
+      </p>
+
+      {!isGuestUpgrade && (
+        <div className="mb-4 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => signInWithOAuth("google")}
+            disabled={busy}
+            className="flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white py-2.5 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+          >
+            🔍 Continue with Google
+          </button>
+          <button
+            type="button"
+            onClick={() => signInWithOAuth("facebook")}
+            disabled={busy}
+            className="flex items-center justify-center gap-2 rounded-full bg-[#1877F2] py-2.5 text-sm font-medium text-white hover:bg-[#1567d3] disabled:opacity-50"
+          >
+            📘 Continue with Facebook
+          </button>
+          <div className="my-1 flex items-center gap-2 text-xs text-neutral-400">
+            <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+            or
+            <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 inline-flex w-full rounded-full border border-neutral-300 p-0.5 text-sm font-medium dark:border-neutral-700">
         <button
@@ -144,6 +213,7 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-xs text-neutral-400">
         Phone sign-in requires an SMS provider configured in your Supabase project (Auth → Providers → Phone).
+        Google/Facebook require OAuth apps configured there too (Auth → Providers).
       </p>
     </div>
   );

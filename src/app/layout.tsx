@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <footer className="border-t border-neutral-200 py-6 text-center text-xs text-neutral-400 dark:border-neutral-800">
             Krisearch — कृषि + Search. Built for Nepali farmers.
           </footer>
+          <FeedbackWidget />
         </LanguageProvider>
       </body>
     </html>

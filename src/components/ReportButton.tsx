@@ -1,28 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ensureSession } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function ReportButton({ postId, commentId }: { postId?: string; commentId?: string }) {
   const { t } = useLanguage();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [sent, setSent] = useState(false);
 
   async function submit() {
     const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      router.push("/login");
+    let user;
+    try {
+      user = await ensureSession(supabase);
+    } catch {
       return;
     }
     await supabase.from("reports").insert({
       post_id: postId ?? null,
       comment_id: commentId ?? null,
-      reported_by: userData.user.id,
+      reported_by: user.id,
       reason: reason || null,
     });
     setSent(true);

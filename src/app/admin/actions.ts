@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, getAdminUserIds } from "@/lib/supabase/admin";
 import type { ReportStatus, VerifiedBadge } from "@/types/database";
 
+type FeedbackStatus = "open" | "reviewed";
+
 async function assertAdmin() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
@@ -27,5 +29,13 @@ export async function setVerifiedBadge(profileId: string, badge: VerifiedBadge) 
   const admin = createAdminClient();
   if (!admin) throw new Error("Admin client not configured (missing SUPABASE_SERVICE_ROLE_KEY).");
   await admin.from("profiles").update({ verified_badge: badge }).eq("id", profileId);
+  revalidatePath("/admin");
+}
+
+export async function updateFeedbackStatus(feedbackId: string, status: FeedbackStatus) {
+  await assertAdmin();
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client not configured (missing SUPABASE_SERVICE_ROLE_KEY).");
+  await admin.from("feedback").update({ status }).eq("id", feedbackId);
   revalidatePath("/admin");
 }

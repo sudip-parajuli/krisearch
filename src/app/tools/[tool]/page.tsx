@@ -27,9 +27,12 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ too
       <SupabaseSetupNotice />
 
       <div>
-        <div className="mb-2 flex items-center gap-2">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold">{equipment.name}</h1>
           <AvailabilityBadge status={equipment.availability_status} />
+          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium dark:bg-neutral-800">
+            {equipment.scope === "global" ? "🌍 Global / emerging" : "🇳🇵 Nepal"}
+          </span>
         </div>
         {equipment.description && <p className="text-sm text-neutral-600 dark:text-neutral-400">{equipment.description}</p>}
         {equipment.how_it_helps && (
@@ -37,6 +40,19 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ too
             💡 {equipment.how_it_helps}
           </p>
         )}
+        <p className="mt-2 text-xs text-neutral-400">
+          {equipment.source_url ? (
+            <>
+              Source:{" "}
+              <a href={equipment.source_url} target="_blank" rel="noreferrer" className="underline">
+                {new URL(equipment.source_url).hostname.replace(/^www\./, "")}
+              </a>
+            </>
+          ) : (
+            "Source: unverified estimate — check before relying on this price"
+          )}{" "}
+          · Last checked {equipment.last_verified}
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

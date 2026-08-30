@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, getAdminUserIds } from "@/lib/supabase/admin";
-import { updateReportStatus, setVerifiedBadge } from "./actions";
+import { updateReportStatus, setVerifiedBadge, updateFeedbackStatus } from "./actions";
 import { EmptyState } from "@/components/EmptyState";
-import type { Report, Profile } from "@/types/database";
+import { SyncPricesButton } from "@/components/SyncPricesButton";
+import type { Report, Profile, Feedback } from "@/types/database";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export default async function AdminPage() {
   }
 
   const admin = createAdminClient();
-  const [{ data: reports }, { data: profiles }] = admin
+  const [{ data: reports }, { data: profiles }, { data: feedback }] = admin
     ? await Promise.all([
         admin
           .from("reports")
@@ -31,13 +32,43 @@ export default async function AdminPage() {
           .eq("status", "open")
           .order("created_at", { ascending: false }),
         admin.from("profiles").select("*").order("created_at", { ascending: false }).limit(50),
+        admin.from("feedback").select("*").eq("status", "open").order("created_at", { ascending: false }),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="mb-3 text-xl font-bold">Open reports ({reports?.length ?? 0})</h1>
+        <h1 className="mb-3 text-xl font-bold">Market price sync</h1>
+        <SyncPricesButton />
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-xl font-bold">Feedback inbox ({feedback?.length ?? 0})</h2>
+        {!feedback || feedback.length === 0 ? (
+          <EmptyState title="No open feedback" />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {(feedback as Feedback[]).map((f) => (
+              <div key={f.id} className="rounded-lg border border-neutral-200 p-3 text-sm dark:border-neutral-800">
+                <p>{f.message}</p>
+                <p className="mt-1 text-xs text-neutral-400">
+                  {f.name ?? "Anonymous"} {f.contact ? `· ${f.contact}` : ""} {f.page_url ? `· ${f.page_url}` : ""} ·{" "}
+                  {new Date(f.created_at).toLocaleString()}
+                </p>
+                <form action={updateFeedbackStatus.bind(null, f.id, "reviewed")} className="mt-2">
+                  <button className="rounded-full bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700">
+                    Mark reviewed
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-xl font-bold">Open reports ({reports?.length ?? 0})</h2>
         {!reports || reports.length === 0 ? (
           <EmptyState title="No open reports" />
         ) : (

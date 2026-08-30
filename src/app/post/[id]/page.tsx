@@ -5,6 +5,7 @@ import { PostTypeBadge } from "@/components/PostTypeBadge";
 import { VoteButtons } from "@/components/VoteButtons";
 import { ReportButton } from "@/components/ReportButton";
 import { CommentSection } from "@/components/CommentSection";
+import { AIVerdictBadge } from "@/components/AIVerdictBadge";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
 import { slugify } from "@/lib/slug";
 
@@ -32,6 +33,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
               </Link>
             )}
             {post.districts && <span className="text-xs text-neutral-400">📍 {post.districts.name}</span>}
+            <AIVerdictBadge verdict={post.ai_verdict} rationale={post.ai_rationale} />
           </div>
           <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">{post.title}</h1>
           <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-700 dark:text-neutral-300">{post.body}</p>
@@ -60,7 +62,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         <h2 className="mb-3 text-sm font-semibold text-neutral-500">
           {post.comment_count} {post.comment_count === 1 ? "comment" : "comments"}
         </h2>
-        <CommentSection postId={post.id} comments={comments} />
+        <CommentSection postId={post.id} postAuthorId={post.author_id} comments={comments} />
       </div>
     </div>
   );

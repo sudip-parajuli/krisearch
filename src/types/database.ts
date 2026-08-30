@@ -76,6 +76,8 @@ export type AvailabilityStatus =
   | "pilot_stage"
   | "service_only";
 
+export type EquipmentScope = "nepal" | "global";
+
 export type Equipment = {
   id: number;
   name: string;
@@ -90,6 +92,7 @@ export type Equipment = {
   related_scheme_id: number | null;
   source_url: string | null;
   last_verified: string; // date
+  scope: EquipmentScope;
 };
 
 export type ProfileRole = "farmer" | "dealer" | "extension_officer" | "general";
@@ -104,7 +107,12 @@ export type Profile = {
   crops_grown: number[] | null;
   bio: string | null;
   created_at: string;
+  contact_info: string | null;
+  is_guest: boolean;
 };
+
+/** AI fact-check signal on a post/comment's content (see lib/ai/factcheck.ts). */
+export type AIVerdict = "safe" | "caution" | "danger" | "unverified";
 
 export type PostType =
   | "question"
@@ -126,6 +134,9 @@ export type Post = {
   body: string;
   image_urls: string[] | null;
   created_at: string;
+  ai_verdict: AIVerdict | null;
+  ai_rationale: string | null;
+  ai_checked_at: string | null;
 };
 
 export type Tag = {
@@ -145,6 +156,10 @@ export type Comment = {
   parent_comment_id: string | null;
   body: string;
   created_at: string;
+  ai_verdict: AIVerdict | null;
+  ai_rationale: string | null;
+  ai_checked_at: string | null;
+  is_best_answer: boolean;
 };
 
 export type Vote = {
@@ -192,6 +207,16 @@ export type VendorEquipment = {
   offering_type: OfferingType;
   price: number | null;
   price_unit: string | null;
+};
+
+export type Feedback = {
+  id: string;
+  name: string | null;
+  contact: string | null;
+  message: string;
+  page_url: string | null;
+  status: "open" | "reviewed";
+  created_at: string;
 };
 
 // Convenience: a post enriched with the joins pages commonly need.

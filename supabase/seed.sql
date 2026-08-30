@@ -215,6 +215,74 @@ insert into equipment (name, category, description, how_it_helps, purchase_price
   )
 on conflict do nothing;
 
+-- ============ GLOBAL / EMERGING TECH (shown for awareness, not Nepal-priced) ============
+-- Illustrative only — these are examples of technology categories used
+-- elsewhere in the world, not verified product listings. Nepal availability
+-- is intentionally marked pilot_stage/import_only, never available_in_nepal,
+-- until a specific real product with a real Nepal presence is added here.
+insert into equipment (name, category, description, how_it_helps, purchase_price_min, purchase_price_max, rental_price, rental_price_unit, availability_status, related_scheme_id, source_url, last_verified, scope) values
+  (
+    'Autonomous Field Robots',
+    'machinery',
+    'Small self-driving robots for weeding, seeding, or monitoring row crops, used commercially in parts of Europe and North America.',
+    'Removes manual weeding labor; used mainly on large, uniform commercial fields today, not smallholder terraces.',
+    null, null, null, null,
+    'pilot_stage',
+    null,
+    null,
+    '2026-06-01',
+    'global'
+  ),
+  (
+    'Satellite Precision-Agriculture Imagery',
+    'digital_app',
+    'Satellite/drone imagery services that flag crop stress, irrigation gaps, and yield estimates over large areas.',
+    'Lets a farm manager spot a problem area before it is visible on the ground, at large commercial scale.',
+    null, null, null, null,
+    'pilot_stage',
+    null,
+    null,
+    '2026-06-01',
+    'global'
+  ),
+  (
+    'AI Crop-Disease Detection App (Global)',
+    'digital_app',
+    'Phone-camera apps that identify crop diseases from a leaf photo using AI models trained on global crop-image datasets.',
+    'Could give farmers an instant first read on a disease photo — accuracy for Nepal-specific crops/pests is not yet verified.',
+    null, null, null, null,
+    'pilot_stage',
+    null,
+    null,
+    '2026-06-01',
+    'global'
+  ),
+  (
+    'Vertical Farming Systems',
+    'greenhouse',
+    'Stacked, climate-controlled indoor growing systems, mostly for leafy greens, used in urban commercial operations abroad.',
+    'High yield per square meter but high capital and energy cost — not yet a fit for typical Nepali smallholder economics.',
+    null, null, null, null,
+    'import_only',
+    null,
+    null,
+    '2026-06-01',
+    'global'
+  ),
+  (
+    'Blockchain Crop Traceability Platforms',
+    'digital_app',
+    'Supply-chain platforms that record a crop''s journey from farm to buyer for provenance/certification purposes.',
+    'Could help premium/export crops (e.g. cardamom, tea) prove origin to buyers, but requires buyer-side adoption too.',
+    null, null, null, null,
+    'pilot_stage',
+    null,
+    null,
+    '2026-06-01',
+    'global'
+  )
+on conflict do nothing;
+
 -- ============ SAMPLE MARKET PRICES (illustrative) ============
 insert into market_prices (crop_id, market_name, price_per_unit, unit, date_recorded, source)
 select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
