@@ -60,16 +60,28 @@ run the files in [supabase/migrations/](supabase/migrations/) **in order**:
    that into an empty state rather than a crash, but it does mean no posts
    show until you run this one. Run it before anything else in this list if
    you're catching up.
+7. `0007_crop_vendor_and_tool_links.sql` — `vendors.crops_supplied` (which
+   crops a vendor sells seeds/inputs for — parallel to the existing
+   `crops_bought`) and a new `crop_equipment` table (which tools are
+   relevant to a given crop, e.g. a solar dryer for coffee post-harvest).
+   Powers the "Vendors for this crop" / "Tools for this crop" sections on
+   `/crops/[crop]` (see "One-stop crop pages" below). Until this runs,
+   `scripts/apply-seed.mjs` reports (and skips, without failing anything
+   else) the two pieces that need it — re-run it after applying `0007` to
+   fill them in.
 
 Then load [supabase/seed.sql](supabase/seed.sql) — safe to re-run any time
-now that `0005`/`0006` give it real upsert targets, and it now includes a
+now that `0005`–`0007` give it real upsert targets, and it now includes a
 one-time cleanup of any earlier fictional schemes/vendors. It has zones,
-districts, ~24 crops, Nepal + global-tech equipment (with real source/video
-links checked live while writing it), **real, sourced government schemes**
-and **real vendor organizations** (see "Real data, honestly scoped" below),
-and a mix of placeholder + real dated market-price snapshots. **Still not a
-verified production dataset end to end** — re-check scheme details
-periodically; things change.
+districts, ~33 crops and products (including Coffee, and animal products —
+Milk, Egg, Honey — not just plants), Nepal + global-tech equipment (with
+real source/video links checked live while writing it), **real, sourced
+government schemes**, **~20 real vendor organizations** with per-crop
+buy/supply links, and a mix of placeholder + real dated market-price
+snapshots (see "Real data, honestly scoped" below for exactly what's
+independently verified vs. user-supplied). **Still not a verified
+production dataset end to end** — re-check scheme details periodically;
+things change.
 
 ### Demo content (optional, for a non-empty first impression)
 
@@ -301,20 +313,40 @@ account, not even the silent guest sign-in.
   `profiles.contact_info` (a guest's optional self-reported phone/email)
   stays private to admins/moderation, same as before.
 - **Real vendor/scheme data, honestly scoped**: seed.sql's schemes and
-  vendors were fully fictional placeholders before; both are now real,
-  sourced organizations we could actually verify (PM-AMP, the Krishi Gyan
-  Kendra network, a provincial Directorate of Agriculture Development
-  example, Mahindra Farm Equipment's Nepal dealer network, National Seed
-  Company Ltd.). We deliberately did **not** invent a real-sounding
-  drone-service company, a specific local agrovet, or a crop-buyer — we
-  couldn't verify one, so that vendor_type stays empty until a real
-  vendor (or a farmer recommending one) signs up through the platform
-  itself, which is the actual long-term source of vendor coverage —
-  Krisearch's whole model is community-submitted content, not a
-  pre-populated directory a handful of web searches could ever complete.
+  vendors were fully fictional placeholders before; both are now real
+  organizations — ~20 vendors covering input suppliers, equipment
+  suppliers, and crop buyers (seeds/fertilizer companies, machinery
+  dealers, marketplace directories, organic-produce buyback platforms,
+  the Nepal Coffee Federation), plus PM-AMP and the Krishi Gyan Kendra
+  network for schemes. Each vendor row is marked in `seed.sql`/
+  `scripts/apply-seed.mjs` as either **independently verified** (we found
+  it ourselves via live search — an official site, a business registry, or
+  a listing on another real platform) or **user-provided, not
+  independently re-verified** (a real business the user supplied, internally
+  consistent with the verified ones, but we didn't re-confirm every detail
+  ourselves) — that distinction is preserved in code comments, not
+  smoothed over. We deliberately did **not** invent a specific local
+  agrovet or drone-service company we couldn't verify — real long-tail
+  vendor coverage has to come from vendors/farmers signing up through the
+  platform itself, which is the actual point of the community layer.
   Local-government (municipality-level) scheme details are similarly
   flagged as genuinely not centrally listable (753 municipalities) rather
   than guessed at.
+- **One-stop crop/product pages**: `/crops/[crop]` now shows, alongside the
+  community feed — **which vendors buy or supply inputs for this specific
+  crop** (`vendors.crops_bought` / the new `crops_supplied`, migration
+  `0007`) and **which of our tools are actually relevant to it**
+  (`crop_equipment`, e.g. a solar dryer linked to Coffee/Ginger/Chilli for
+  post-harvest drying, a polyhouse kit linked to Tomato/Cauliflower/Cabbage).
+  The product catalog also grew from 24 to ~33 entries — added Coffee (the
+  example this was built around: real climate/district baseline notes, a
+  real link to the Nepal Coffee Federation as buyer, real input suppliers)
+  and genuine **animal products**, not just plants — Milk, Egg, and Honey
+  now have their own listings (`category: animal_product`), alongside the
+  existing live-animal entries (Buffalo, Goat) and a new Poultry entry.
+  This still isn't exhaustive — Nepal has far more local crop varieties
+  than 33 — the community feed under each crop is what fills that gap over
+  time, same as it always was.
 - **Tools grid**: was one full-width section per category — with ~1 item in
   several categories, that meant mostly-empty rows stacked vertically.
   [ToolsClient.tsx](src/components/ToolsClient.tsx) now renders one

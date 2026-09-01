@@ -74,7 +74,16 @@ insert into crops (name_en, name_np, category, baseline_notes) values
   ('Citrus (Junar/Orange)', 'सुन्तला', 'fruit', 'Mid-hill fruit crop, vulnerable to citrus greening disease.'),
   ('Mushroom (Button)', 'च्याउ', 'vegetable', 'High-value, short-cycle crop increasingly grown by smallholders near urban markets.'),
   ('Buffalo (Dairy)', 'भैंसी', 'livestock', 'Primary dairy animal for most smallholder households.'),
-  ('Goat', 'बाख्रा', 'livestock', 'Widespread smallholder livestock, important for cash income and meat.')
+  ('Goat', 'बाख्रा', 'livestock', 'Widespread smallholder livestock, important for cash income and meat.'),
+  ('Coffee', 'कफी', 'cash_crop', 'Grown in ~23 mid-hill districts (e.g. Kavre, Gorkha, Palpa, Syangja); a small but growing specialty-export crop, coordinated nationally by the Nepal Coffee Federation.'),
+  ('Turmeric', 'बेसार', 'spice', 'Hill/Terai spice crop, usually intercropped; steady demand as both a spice and a dye.'),
+  ('Garlic', 'लसुन', 'vegetable', 'Widely grown winter crop, high local demand, partly import-dependent like onion.'),
+  ('Soybean', 'भटमास', 'cash_crop', 'Hill oilseed/protein crop, also eaten fresh as edamame-style भटमासकोशा.'),
+  ('Buckwheat (Faper)', 'फापर', 'cereal', 'High-hill/mountain staple where rice/wheat don''t grow well; increasingly marketed as a specialty grain.'),
+  ('Poultry (Chicken)', 'कुखुरा', 'livestock', 'Nepal''s most common smallholder livestock — broiler and layer farming both widespread.'),
+  ('Milk (Dairy Products)', 'दूध', 'animal_product', 'The product, not the animal — cow/buffalo milk and processed dairy (curd, ghee, paneer). See Buffalo (Dairy) and Goat for the animals themselves.'),
+  ('Egg', 'अन्डा', 'animal_product', 'Major smallholder income source alongside poultry meat; commercial layer farming is widespread near urban markets.'),
+  ('Honey (Beekeeping)', 'मह (मौरीपालन)', 'animal_product', 'Growing smallholder sideline — both Apis cerana (traditional) and Apis mellifera (commercial) beekeeping are practiced.')
 on conflict (name_en) do nothing;
 
 -- ============ CROP_ZONES (typical planting windows, baseline only) ============
@@ -415,15 +424,16 @@ select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
 join crops c on c.name_en = v.crop_name
 on conflict (crop_id, market_name, date_recorded) do nothing;
 
--- ============ VENDORS — real organizations only (checked live 2026-09-01) ============
--- Deliberately short. We could only verify two organizations with a real,
--- public, checkable presence relevant to individual farmers — a
--- manufacturer's own Nepal dealer-network page, and a registered national
--- seed company. We did NOT find a verifiable real drone-spraying service or
--- a specific real local crop-buyer/agrovet with public contact info —
--- rather than invent one, those vendor_type categories are left for real
--- vendors/farmers to fill in themselves (Krisearch's whole model is
--- community-submitted content, not a pre-populated directory).
+-- ============ VENDORS — real organizations (checked live 2026-09-01) ============
+-- Two provenance tiers, marked per-row below:
+-- - INDEPENDENTLY VERIFIED: found via live web search (official site,
+--   business registry, or a listing on another real platform).
+-- - USER-PROVIDED, NOT RE-VERIFIED: a real Nepali agribusiness the user
+--   supplied, internally consistent with the verified ones, but not
+--   independently re-confirmed by us in every detail. No fabricated phone
+--   numbers either way — only real emails/URLs we actually have.
+-- crops_bought/crops_supplied below are a representative subset, not an
+-- exhaustive catalog, for these large multi-product businesses.
 --
 -- Cleans up an earlier version of this file that seeded 7 entirely made-up
 -- businesses with fake phone numbers — safe no-op if you never had them.
@@ -438,27 +448,101 @@ delete from vendors where business_name in (
   'Terai Solar Solutions', 'Kalimati Fresh Buyers Coop', 'Ilam Tea & Ginger Traders', 'Gorkha Agrovet Center'
 );
 
-insert into vendors (business_name, vendor_type, district_id, contact_info, rating_avg) values
-  (
-    'Mahindra Farm Equipment (Nepal)',
-    'equipment_supplier',
-    null, -- nationwide dealer network, not one location
-    'Official manufacturer page — use the Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal',
-    null
-  ),
-  (
-    'National Seed Company Ltd. (NSC)',
-    'input_supplier',
-    (select id from districts where name = 'Kathmandu'),
-    'Central Office, Kuleshwor, Kathmandu — see nscl.org.np for your nearest area office',
-    null
-  )
+insert into vendors (business_name, vendor_type, district_id, contact_info, crops_bought, crops_supplied, rating_avg) values
+  -- --- independently verified ---
+  ('Mahindra Farm Equipment (Nepal)', 'equipment_supplier', null,
+   'Official manufacturer page — Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal',
+   null, null, null),
+  ('National Seed Company Ltd. (NSC)', 'input_supplier', (select id from districts where name = 'Kathmandu'),
+   'Central Office, Kuleshwor, Kathmandu — nscl.org.np for your nearest area office',
+   null, array(select id from crops where name_en in ('Rice', 'Maize', 'Wheat', 'Potato', 'Lentil (Musuro)')), null),
+  ('Muktinath Krishi Company Ltd. (MKCL)', 'input_supplier', (select id from districts where name = 'Kathmandu'),
+   'Basundhara, Ring Road, Kathmandu — NEPSE-listed (symbol: MKCL), a Muktinath Bikas Bank subsidiary. Seeds, fertilizers, crop-protection chemicals, technical guidance.',
+   null, null, null),
+  ('Muktinath Krishi Company Ltd. (MKCL)', 'equipment_supplier', (select id from districts where name = 'Kathmandu'),
+   'Basundhara, Ring Road, Kathmandu — mini-tillers, power weeders, and other agriculture/livestock equipment.',
+   null, null, null),
+  ('Krishighar', 'input_supplier', null,
+   'Online wholesale portal for agro-medicine, veterinary medicine & agro tools — krishighar.com.np',
+   null, null, null),
+  ('Krishi Bajar', 'input_supplier', null,
+   'Online marketplace/directory connecting farmers to agrovets and listings for crops, manures, cattle, used machinery — krishibajar.com (a directory, not a single seller)',
+   null, null, null),
+  ('NMS Agro Pvt. Ltd.', 'input_supplier', null,
+   'Distributes Bayer Cropscience crop-protection products and Neem India organic treatments — listed on krishibajar.com',
+   null, null, null),
+  ('Hardwarepasal', 'equipment_supplier', (select id from districts where name = 'Kathmandu'),
+   'Online hardware & irrigation-parts retailer, Kathmandu — hardwarepasal.com',
+   null, null, null),
+  ('Grown in Nepal (by aQysta)', 'input_supplier', null,
+   'Seeds, fertilizers, modern tools, pesticides — part of aQysta''s afforestation + coffee income-diversification program — growninnepal.com',
+   null, array(select id from crops where name_en in ('Coffee')), null),
+  ('Grown in Nepal (by aQysta)', 'crop_buyer', null,
+   'Buys fresh fruits, vegetables, native herbs, and raw spices from partner farmers; technical training + catering/HORECA market access — growninnepal.com',
+   array(select id from crops where name_en in ('Coffee', 'Tomato', 'Ginger')), null, null),
+  ('Nepal Coffee Federation (NCF)', 'crop_buyer', null,
+   'Umbrella federation, ~2,000 members incl. District Coffee Producers Associations; connects producers to international markets, supplies machine/parts/technical aid — coffeenepal.org.np, sanskriti.acharya@coffeenepal.org.np',
+   array(select id from crops where name_en in ('Coffee')), null, null),
+  -- --- user-provided, not independently re-verified by us ---
+  ('Panchkhal Agro Group', 'input_supplier', (select id from districts where name = 'Kavrepalanchok'),
+   'Kavre vegetable belt — six-company group distributing seeds, crop protection, and plant nutrition to local agrovets/cooperatives. (Not independently re-verified by us.)',
+   null, null, null),
+  ('NAFSCOL Krishiban Pvt. Ltd.', 'input_supplier', null,
+   'Agroforestry setups, nursery materials, growth hormones, organic manures, rooftop farming setups. (Not independently re-verified by us.)',
+   null, null, null),
+  ('Shalom Agriculture', 'equipment_supplier', null,
+   'Irrigation systems and structural farming tools from certified hardware brands. (Not independently re-verified by us.)',
+   null, null, null),
+  ('Thulo Marketplace', 'equipment_supplier', null,
+   'Business directory of 110+ physical storefronts across Nepal selling farm machinery, feed, and plant bulbs — a directory, not a single seller. (Not independently re-verified by us.)',
+   null, null, null),
+  ('Machine Pasal', 'equipment_supplier', null,
+   'Online catalog of food-processing plants, power tools, water pumps, and feed-milling machines. (Not independently re-verified by us.)',
+   null, null, null),
+  ('Krishihub Nepal', 'crop_buyer', null,
+   'Buys 100% certified organic farm produce, distributed within 24 hours of harvest; also provides agritech training + supply logistics. (Not independently re-verified by us.)',
+   null, null, null),
+  ('Organic Venture Nepal', 'crop_buyer', null,
+   'Buys buckwheat (Faper), cow ghee, and Timur from smallholder communities; provides organic-input and sustainability counseling. (Not independently re-verified by us.)',
+   array(select id from crops where name_en in ('Buckwheat (Faper)', 'Milk (Dairy Products)')), null, null),
+  ('Original Organic Farm', 'crop_buyer', null,
+   'Structured maize/staple-crop buyback partnerships (e.g. with Belaka Municipality). (Not independently re-verified by us.)',
+   array(select id from crops where name_en in ('Maize')), null, null),
+  ('The Farm Shop KTM', 'crop_buyer', (select id from districts where name = 'Kathmandu'),
+   'Buys artisanal cheeses, raw honey, organic vegetables, and specialty grains for fair-trade urban delivery. (Not independently re-verified by us.)',
+   array(select id from crops where name_en in ('Milk (Dairy Products)', 'Honey (Beekeeping)')), null, null)
 on conflict (business_name, vendor_type) do update set
   district_id = excluded.district_id,
   contact_info = excluded.contact_info,
+  crops_bought = excluded.crops_bought,
+  crops_supplied = excluded.crops_supplied,
   rating_avg = excluded.rating_avg;
 
 -- No vendor_equipment rows: we couldn't verify which specific catalog item
--- either real vendor actually stocks at what price — better to show
+-- any of these vendors actually stocks at what price — better to show
 -- "no vendors listed yet" on a tool page than fabricate a price/product link
--- neither vendor has confirmed.
+-- nobody has confirmed.
+
+-- ============ CROP <-> EQUIPMENT LINKS ============
+insert into crop_equipment (crop_id, equipment_id, notes)
+select c.id, e.id, v.notes from (values
+  ('Coffee', 'Solar Dryer (Post-Harvest)', 'Drying coffee cherries/parchment post-harvest.'),
+  ('Coffee', 'Drip Irrigation Kit (per Ropani)', 'Irrigating young coffee plants during establishment.'),
+  ('Coffee', 'IoT Soil-Moisture Sensor Kit', 'Managing soil moisture under shade-grown coffee.'),
+  ('Rice', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'Land preparation on small/terraced paddy plots.'),
+  ('Rice', 'Agricultural Spraying Drone', 'Pest/fertilizer spraying over paddy fields.'),
+  ('Maize', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'Land preparation on hill maize plots.'),
+  ('Wheat', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'Land preparation after rice/maize harvest.'),
+  ('Potato', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'Land prep and ridging for potato beds.'),
+  ('Potato', 'Drip Irrigation Kit (per Ropani)', 'Consistent moisture for tuber development.'),
+  ('Tomato', 'Small Greenhouse / Polyhouse Kit', 'Season extension and protection from hail/erratic rain.'),
+  ('Tomato', 'Drip Irrigation Kit (per Ropani)', 'Water-efficient irrigation for tunnel/polyhouse tomato.'),
+  ('Cauliflower', 'Small Greenhouse / Polyhouse Kit', 'Nursery-stage protection before transplanting.'),
+  ('Cabbage', 'Small Greenhouse / Polyhouse Kit', 'Nursery-stage protection before transplanting.'),
+  ('Ginger', 'Solar Dryer (Post-Harvest)', 'Drying ginger for higher-value dried/powdered product.'),
+  ('Chilli (Dry)', 'Solar Dryer (Post-Harvest)', 'Drying chilli for the dry/wholesale market.'),
+  ('Turmeric', 'Solar Dryer (Post-Harvest)', 'Drying turmeric rhizomes before grinding.')
+) as v(crop_name, equipment_name, notes)
+join crops c on c.name_en = v.crop_name
+join equipment e on e.name = v.equipment_name
+on conflict (crop_id, equipment_id) do update set notes = excluded.notes;

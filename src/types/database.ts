@@ -23,7 +23,8 @@ export type CropCategory =
   | "cash_crop"
   | "fruit"
   | "spice"
-  | "livestock";
+  | "livestock"
+  | "animal_product"; // milk, eggs, honey, meat — things farmed FROM animals, not the animal itself
 
 export type Crop = {
   id: number;
@@ -199,6 +200,7 @@ export type Vendor = {
   vendor_type: VendorType;
   business_name: string | null;
   crops_bought: number[] | null;
+  crops_supplied: number[] | null; // seeds/seedlings/inputs this vendor sells FOR these crops
   district_id: number | null;
   contact_info: string | null;
   rating_avg: number | null;
@@ -212,6 +214,12 @@ export type VendorEquipment = {
   offering_type: OfferingType;
   price: number | null;
   price_unit: string | null;
+};
+
+export type CropEquipment = {
+  crop_id: number;
+  equipment_id: number;
+  notes: string | null;
 };
 
 export type Feedback = {

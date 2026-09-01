@@ -65,6 +65,12 @@ export const dictionary = {
   plantLabel: { ne: "रोप्ने समय", en: "plant" },
   noCropPostsYet: { ne: "यो बालीका लागि अहिलेसम्म कुनै पोस्ट छैन", en: "No community posts for this crop yet" },
   shareAboutPrefix: { ne: "बारे लेख्नुहोस्:", en: "Share about" },
+  vendorsForCrop: { ne: "यो बालीका लागि विक्रेता", en: "Vendors for this crop" },
+  toolsForCrop: { ne: "यो बालीका लागि औजार र प्रविधि", en: "Tools & technology for this crop" },
+  noVendorsForCrop: { ne: "यो बालीका लागि अहिलेसम्म कुनै विक्रेता छैन", en: "No vendors listed yet for this crop" },
+  noToolsForCrop: { ne: "यो बालीसँग जोडिएको कुनै औजार छैन", en: "No tools linked to this crop yet" },
+  buysThisCrop: { ne: "यो बाली किन्छ", en: "Buys this crop" },
+  suppliesSeedsFor: { ne: "यसको बीउ/सामग्री बेच्छ", en: "Supplies seeds/inputs for this" },
 
   // schemes
   lastVerified: { ne: "अन्तिम पुष्टि", en: "Last verified" },

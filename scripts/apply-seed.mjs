@@ -109,6 +109,15 @@ async function main() {
     ["Mushroom (Button)", "च्याउ", "vegetable", "High-value, short-cycle crop increasingly grown by smallholders near urban markets."],
     ["Buffalo (Dairy)", "भैंसी", "livestock", "Primary dairy animal for most smallholder households."],
     ["Goat", "बाख्रा", "livestock", "Widespread smallholder livestock, important for cash income and meat."],
+    ["Coffee", "कफी", "cash_crop", "Grown in ~23 mid-hill districts (e.g. Kavre, Gorkha, Palpa, Syangja); a small but growing specialty-export crop, coordinated nationally by the Nepal Coffee Federation."],
+    ["Turmeric", "बेसार", "spice", "Hill/Terai spice crop, usually intercropped; steady demand as both a spice and a dye."],
+    ["Garlic", "लसुन", "vegetable", "Widely grown winter crop, high local demand, partly import-dependent like onion."],
+    ["Soybean", "भटमास", "cash_crop", "Hill oilseed/protein crop, also eaten fresh as edamame-style भटमासकोशा."],
+    ["Buckwheat (Faper)", "फापर", "cereal", "High-hill/mountain staple where rice/wheat don't grow well; increasingly marketed as a specialty grain."],
+    ["Poultry (Chicken)", "कुखुरा", "livestock", "Nepal's most common smallholder livestock — broiler and layer farming both widespread."],
+    ["Milk (Dairy Products)", "दूध", "animal_product", "The product, not the animal — cow/buffalo milk and processed dairy (curd, ghee, paneer). See Buffalo (Dairy) and Goat for the animals themselves."],
+    ["Egg", "अन्डा", "animal_product", "Major smallholder income source alongside poultry meat; commercial layer farming is widespread near urban markets."],
+    ["Honey (Beekeeping)", "मह (मौरीपालन)", "animal_product", "Growing smallholder sideline — both Apis cerana (traditional) and Apis mellifera (commercial) beekeeping are practiced."],
   ].map(([name_en, name_np, category, baseline_notes]) => ({ name_en, name_np, category, baseline_notes }));
   fail("crops", (await supabase.from("crops").upsert(cropRows, { onConflict: "name_en", ignoreDuplicates: true })).error);
 
@@ -258,41 +267,167 @@ async function main() {
     fail("delete retired vendors", (await supabase.from("vendors").delete().in("id", retiredIds)).error);
   }
 
-  console.log("Vendors — real organizations only (checked live 2026-09-01)...");
-  // Deliberately short. We could only verify two organizations with a real,
-  // public, checkable presence relevant to individual farmers — a
-  // manufacturer's own Nepal dealer-network page, and a registered national
-  // seed company. We did NOT find a verifiable real drone-spraying service
-  // company or a specific real local crop-buyer/agrovet with public contact
-  // info — rather than invent one, those vendor_type categories are left for
-  // real vendors/farmers to fill in themselves via the platform (Krisearch's
-  // whole model is community-submitted content, not a pre-populated
-  // directory) — see the note in README.
+  console.log("Vendors — real organizations (checked live 2026-09-01)...");
+  // Two provenance tiers, marked per-row below:
+  // - INDEPENDENTLY VERIFIED: we found this organization ourselves via live
+  //   web search (official site, business registry, or a listing on another
+  //   real platform) and confirmed what it does.
+  // - USER-PROVIDED, NOT RE-VERIFIED: the user supplied this business (real
+  //   Nepali agribusiness landscape, plausible and internally consistent),
+  //   but we did not independently re-confirm every detail ourselves — no
+  //   fabricated phone numbers either way, only real emails/URLs we have.
+  // crops_supplied/crops_bought below use a representative subset, not an
+  // exhaustive catalog — these are large, multi-product businesses.
+  const cropIds = (names) => names.map((n) => cropId(n)).filter(Boolean);
   const vendorRows = [
+    // --- independently verified ---
     {
-      business_name: "Mahindra Farm Equipment (Nepal)",
-      vendor_type: "equipment_supplier",
-      district_id: null, // nationwide dealer network, not one location
-      contact_info: "Official manufacturer page — use the Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal",
-      rating_avg: null,
+      business_name: "Mahindra Farm Equipment (Nepal)", vendor_type: "equipment_supplier",
+      district_id: null, contact_info: "Official manufacturer page — Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
     },
     {
-      business_name: "National Seed Company Ltd. (NSC)",
-      vendor_type: "input_supplier",
-      district_id: districtId("Kathmandu"),
-      contact_info: "Central Office, Kuleshwor, Kathmandu — see nscl.org.np for your nearest area office",
-      rating_avg: null,
+      business_name: "National Seed Company Ltd. (NSC)", vendor_type: "input_supplier",
+      district_id: districtId("Kathmandu"), contact_info: "Central Office, Kuleshwor, Kathmandu — nscl.org.np for your nearest area office",
+      crops_bought: null, crops_supplied: cropIds(["Rice", "Maize", "Wheat", "Potato", "Lentil (Musuro)"]), rating_avg: null,
+    },
+    {
+      business_name: "Muktinath Krishi Company Ltd. (MKCL)", vendor_type: "input_supplier",
+      district_id: districtId("Kathmandu"), contact_info: "Basundhara, Ring Road, Kathmandu — NEPSE-listed (symbol: MKCL), a Muktinath Bikas Bank subsidiary. Seeds, fertilizers, crop-protection chemicals, technical guidance.",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Muktinath Krishi Company Ltd. (MKCL)", vendor_type: "equipment_supplier",
+      district_id: districtId("Kathmandu"), contact_info: "Basundhara, Ring Road, Kathmandu — mini-tillers, power weeders, and other agriculture/livestock equipment.",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Krishighar", vendor_type: "input_supplier",
+      district_id: null, contact_info: "Online wholesale portal for agro-medicine, veterinary medicine & agro tools — krishighar.com.np",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Krishi Bajar", vendor_type: "input_supplier",
+      district_id: null, contact_info: "Online marketplace/directory connecting farmers to agrovets and listings for crops, manures, cattle, used machinery — krishibajar.com (a directory, not a single seller)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "NMS Agro Pvt. Ltd.", vendor_type: "input_supplier",
+      district_id: null, contact_info: "Distributes Bayer Cropscience crop-protection products and Neem India organic treatments — listed on krishibajar.com",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Hardwarepasal", vendor_type: "equipment_supplier",
+      district_id: districtId("Kathmandu"), contact_info: "Online hardware & irrigation-parts retailer, Kathmandu — hardwarepasal.com",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Grown in Nepal (by aQysta)", vendor_type: "input_supplier",
+      district_id: null, contact_info: "Seeds, fertilizers, modern tools, pesticides — part of aQysta's afforestation + coffee income-diversification program — growninnepal.com",
+      crops_bought: null, crops_supplied: cropIds(["Coffee"]), rating_avg: null,
+    },
+    {
+      business_name: "Grown in Nepal (by aQysta)", vendor_type: "crop_buyer",
+      district_id: null, contact_info: "Buys fresh fruits, vegetables, native herbs, and raw spices from partner farmers; technical training + catering/HORECA market access — growninnepal.com",
+      crops_bought: cropIds(["Coffee", "Tomato", "Ginger"]), crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Nepal Coffee Federation (NCF)", vendor_type: "crop_buyer",
+      district_id: null, contact_info: "Umbrella federation, ~2,000 members incl. District Coffee Producers Associations; connects producers to international markets, supplies machine/parts/technical aid — coffeenepal.org.np, sanskriti.acharya@coffeenepal.org.np",
+      crops_bought: cropIds(["Coffee"]), crops_supplied: null, rating_avg: null,
+    },
+    // --- user-provided, not independently re-verified by us ---
+    {
+      business_name: "Panchkhal Agro Group", vendor_type: "input_supplier",
+      district_id: districtId("Kavrepalanchok"), contact_info: "Kavre vegetable belt — six-company group distributing seeds, crop protection, and plant nutrition to local agrovets/cooperatives. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "NAFSCOL Krishiban Pvt. Ltd.", vendor_type: "input_supplier",
+      district_id: null, contact_info: "Agroforestry setups, nursery materials, growth hormones, organic manures, rooftop farming setups. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Shalom Agriculture", vendor_type: "equipment_supplier",
+      district_id: null, contact_info: "Irrigation systems and structural farming tools from certified hardware brands. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Thulo Marketplace", vendor_type: "equipment_supplier",
+      district_id: null, contact_info: "Business directory of 110+ physical storefronts across Nepal selling farm machinery, feed, and plant bulbs — a directory, not a single seller. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Machine Pasal", vendor_type: "equipment_supplier",
+      district_id: null, contact_info: "Online catalog of food-processing plants, power tools, water pumps, and feed-milling machines. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Krishihub Nepal", vendor_type: "crop_buyer",
+      district_id: null, contact_info: "Buys 100% certified organic farm produce, distributed within 24 hours of harvest; also provides agritech training + supply logistics. (Not independently re-verified by us.)",
+      crops_bought: null, crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Organic Venture Nepal", vendor_type: "crop_buyer",
+      district_id: null, contact_info: "Buys buckwheat (Faper), cow ghee, and Timur from smallholder communities; provides organic-input and sustainability counseling. (Not independently re-verified by us.)",
+      crops_bought: cropIds(["Buckwheat (Faper)", "Milk (Dairy Products)"]), crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "Original Organic Farm", vendor_type: "crop_buyer",
+      district_id: null, contact_info: "Structured maize/staple-crop buyback partnerships (e.g. with Belaka Municipality). (Not independently re-verified by us.)",
+      crops_bought: cropIds(["Maize"]), crops_supplied: null, rating_avg: null,
+    },
+    {
+      business_name: "The Farm Shop KTM", vendor_type: "crop_buyer",
+      district_id: districtId("Kathmandu"), contact_info: "Buys artisanal cheeses, raw honey, organic vegetables, and specialty grains for fair-trade urban delivery. (Not independently re-verified by us.)",
+      crops_bought: cropIds(["Milk (Dairy Products)", "Honey (Beekeeping)"]), crops_supplied: null, rating_avg: null,
     },
   ];
+  // vendors.crops_supplied only exists once migration 0007 is applied — probe
+  // for it so the OTHER 18+ real vendor rows aren't all blocked by one
+  // missing column on rows that don't even use it.
+  const hasCropsSupplied = !(await supabase.from("vendors").select("crops_supplied").limit(1)).error;
+  if (!hasCropsSupplied) console.log("  (vendors.crops_supplied not found yet — apply migration 0007, then re-run this script to fill it in)");
+
   for (const v of vendorRows) {
+    const payload = hasCropsSupplied ? v : Object.fromEntries(Object.entries(v).filter(([k]) => k !== "crops_supplied"));
     const { data: existing } = await supabase.from("vendors").select("id").eq("business_name", v.business_name).eq("vendor_type", v.vendor_type).maybeSingle();
-    if (existing) fail(`update vendor "${v.business_name}"`, (await supabase.from("vendors").update(v).eq("id", existing.id)).error);
-    else fail(`insert vendor "${v.business_name}"`, (await supabase.from("vendors").insert(v)).error);
+    if (existing) fail(`update vendor "${v.business_name}"`, (await supabase.from("vendors").update(payload).eq("id", existing.id)).error);
+    else fail(`insert vendor "${v.business_name}"`, (await supabase.from("vendors").insert(payload)).error);
   }
   // No vendor_equipment rows: we couldn't verify which specific catalog item
-  // either real vendor actually stocks at what price — better to leave that
-  // section showing "no vendors listed yet" than fabricate a price/product
-  // link neither vendor has confirmed.
+  // any of these vendors actually stocks at what price — better to leave
+  // that section showing "no vendors listed yet" than fabricate a
+  // price/product link nobody has confirmed.
+
+  console.log("Crop <-> equipment links (needs migration 0007 — reports an error and continues if not yet applied)...");
+  const { data: equipmentForLinking } = await supabase.from("equipment").select("id, name");
+  const equipmentIdByName = (name) => equipmentForLinking?.find((e) => e.name === name)?.id;
+  const cropEquipmentRows = [
+    ["Coffee", "Solar Dryer (Post-Harvest)", "Drying coffee cherries/parchment post-harvest."],
+    ["Coffee", "Drip Irrigation Kit (per Ropani)", "Irrigating young coffee plants during establishment."],
+    ["Coffee", "IoT Soil-Moisture Sensor Kit", "Managing soil moisture under shade-grown coffee."],
+    ["Rice", "Mini-Tiller (Power Tiller, Walk-Behind)", "Land preparation on small/terraced paddy plots."],
+    ["Rice", "Agricultural Spraying Drone", "Pest/fertilizer spraying over paddy fields."],
+    ["Maize", "Mini-Tiller (Power Tiller, Walk-Behind)", "Land preparation on hill maize plots."],
+    ["Wheat", "Mini-Tiller (Power Tiller, Walk-Behind)", "Land preparation after rice/maize harvest."],
+    ["Potato", "Mini-Tiller (Power Tiller, Walk-Behind)", "Land prep and ridging for potato beds."],
+    ["Potato", "Drip Irrigation Kit (per Ropani)", "Consistent moisture for tuber development."],
+    ["Tomato", "Small Greenhouse / Polyhouse Kit", "Season extension and protection from hail/erratic rain."],
+    ["Tomato", "Drip Irrigation Kit (per Ropani)", "Water-efficient irrigation for tunnel/polyhouse tomato."],
+    ["Cauliflower", "Small Greenhouse / Polyhouse Kit", "Nursery-stage protection before transplanting."],
+    ["Cabbage", "Small Greenhouse / Polyhouse Kit", "Nursery-stage protection before transplanting."],
+    ["Ginger", "Solar Dryer (Post-Harvest)", "Drying ginger for higher-value dried/powdered product."],
+    ["Chilli (Dry)", "Solar Dryer (Post-Harvest)", "Drying chilli for the dry/wholesale market."],
+    ["Turmeric", "Solar Dryer (Post-Harvest)", "Drying turmeric rhizomes before grinding."],
+  ]
+    .map(([crop, equipmentName, notes]) => ({ crop_id: cropId(crop), equipment_id: equipmentIdByName(equipmentName), notes }))
+    .filter((r) => r.crop_id && r.equipment_id);
+  if (cropEquipmentRows.length > 0) {
+    fail("crop_equipment", (await supabase.from("crop_equipment").upsert(cropEquipmentRows, { onConflict: "crop_id,equipment_id" })).error);
+  } else {
+    fail("crop_equipment", new Error("no rows resolved — is migration 0007 applied, and did the equipment lookup run first?"));
+  }
 
   console.log("\nDone.");
 }

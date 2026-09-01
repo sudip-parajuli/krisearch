@@ -3,23 +3,31 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PostCard } from "./PostCard";
+import { ToolCard } from "./ToolCard";
 import { EmptyState } from "./EmptyState";
 import type { PostRow } from "@/lib/data";
-import type { Crop, CropZone, Zone } from "@/types/database";
+import type { Crop, CropZone, Zone, Vendor, Equipment, District } from "@/types/database";
 
 export function CropDetailClient({
   crop,
   cropZones,
   zones,
   posts,
+  vendors,
+  districts,
+  equipmentLinks,
 }: {
   crop: Crop;
   cropZones: CropZone[];
   zones: Zone[];
   posts: PostRow[];
+  vendors: Vendor[];
+  districts: District[];
+  equipmentLinks: { equipment: Equipment | null; notes: string | null }[];
 }) {
   const { t } = useLanguage();
   const zoneById = new Map(zones.map((z) => [z.id, z]));
+  const districtById = new Map(districts.map((d) => [d.id, d]));
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,6 +63,57 @@ export function CropDetailClient({
                       — {t("plantLabel")} {cz.typical_planting_months}
                     </span>
                   )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {equipmentLinks.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">{t("toolsForCrop")}</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {equipmentLinks
+              .filter((l) => l.equipment)
+              .map((l) => (
+                <ToolCard key={l.equipment!.id} equipment={l.equipment!} />
+              ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">{t("vendorsForCrop")}</h2>
+        {vendors.length === 0 ? (
+          <EmptyState icon="🏪" title={t("noVendorsForCrop")} />
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {vendors.map((v) => {
+              const buys = v.crops_bought?.includes(crop.id);
+              const supplies = v.crops_supplied?.includes(crop.id);
+              return (
+                <div
+                  key={v.id}
+                  className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <p className="font-semibold">{v.business_name}</p>
+                  {v.district_id && districtById.get(v.district_id) && (
+                    <p className="text-xs text-neutral-400">📍 {districtById.get(v.district_id)!.name}</p>
+                  )}
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {buys && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                        {t("buysThisCrop")}
+                      </span>
+                    )}
+                    {supplies && (
+                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                        {t("suppliesSeedsFor")}
+                      </span>
+                    )}
+                  </div>
+                  {v.contact_info && <p className="mt-1.5 text-xs text-neutral-500">{v.contact_info}</p>}
                 </div>
               );
             })}

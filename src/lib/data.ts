@@ -13,6 +13,7 @@ import type {
   Vendor,
   VendorEquipment,
   VendorType,
+  CropEquipment,
   Post,
   PostType,
   Comment,
@@ -132,6 +133,32 @@ export async function getVendorEquipmentFor(equipmentId: number): Promise<
     .eq("equipment_id", equipmentId);
   if (error) return [];
   return (data ?? []) as (VendorEquipment & { vendors: Vendor | null })[];
+}
+
+/** Vendors relevant to a crop — buys it from farmers, or sells seeds/inputs for it. */
+export async function getVendorsForCrop(cropId: number): Promise<Vendor[]> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vendors")
+    .select("*")
+    .or(`crops_bought.cs.{${cropId}},crops_supplied.cs.{${cropId}}`);
+  if (error) return [];
+  return data ?? [];
+}
+
+/** Tools/technology relevant to a specific crop (e.g. a solar dryer for coffee post-harvest). */
+export async function getEquipmentForCrop(cropId: number): Promise<
+  (CropEquipment & { equipment: Equipment | null })[]
+> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("crop_equipment")
+    .select("*, equipment(*)")
+    .eq("crop_id", cropId);
+  if (error) return [];
+  return (data ?? []) as (CropEquipment & { equipment: Equipment | null })[];
 }
 
 export type PostFilters = {
