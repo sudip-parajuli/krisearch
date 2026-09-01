@@ -65,10 +65,15 @@ run the files in [supabase/migrations/](supabase/migrations/) **in order**:
    `crops_bought`) and a new `crop_equipment` table (which tools are
    relevant to a given crop, e.g. a solar dryer for coffee post-harvest).
    Powers the "Vendors for this crop" / "Tools for this crop" sections on
-   `/crops/[crop]` (see "One-stop crop pages" below). Until this runs,
-   `scripts/apply-seed.mjs` reports (and skips, without failing anything
-   else) the two pieces that need it — re-run it after applying `0007` to
-   fill them in.
+   `/crops/[crop]` (see "One-stop crop pages" below).
+8. `0008_vendor_submission.sql` — insert/update RLS policies on `vendors`.
+   Before this, the table only had a public-read policy — nobody, not even
+   a logged-in user, could actually add a vendor. Powers `/vendors/new`
+   (see "Vendor self-submission" below).
+
+Until `0007` runs, `scripts/apply-seed.mjs` reports (and skips, without
+failing anything else) the two pieces that need it — re-run it after
+applying `0007` to fill them in.
 
 Then load [supabase/seed.sql](supabase/seed.sql) — safe to re-run any time
 now that `0005`–`0007` give it real upsert targets, and it now includes a
@@ -235,7 +240,8 @@ scripts/
 | `/tools`, `/tools/[tool]` | Agri-tech directory, tabbed **In Nepal** / **Global \| Emerging** — purchase *and* rental/service price, honest availability status, linked subsidy, vendors, community reviews |
 | `/schemes` | Government scheme directory, "last verified" surfaced prominently |
 | `/prices` | Aggregated market prices with a simple trend indicator |
-| `/vendors` | Crop buyers + equipment suppliers/rental/service providers |
+| `/vendors`, `/vendors/new` | Crop buyers + equipment suppliers/rental/service providers, with self-submission — anyone (including a guest) can list themselves or a vendor they know |
+| `/search` | Unified search across crops, tools, vendors, schemes, and posts — plus an on-demand AI-generated overview (climate/process/care/selling) for a matched crop |
 | `/profile/[id]` | District, crops grown, post history, verified badge |
 | `/login` | Phone / email / Google / Facebook — plus silent guest-to-verified upgrade |
 | `/admin` | Price sync trigger, feedback inbox, report moderation, verified-badge management (restricted via `ADMIN_USER_IDS`) |
@@ -246,6 +252,55 @@ account, not even the silent guest sign-in.
 
 ## Design notes
 
+- **Visual identity, not default Tailwind**: `globals.css` overrides
+  Tailwind's built-in `green-*` scale with a custom, more muted forest
+  palette and adds a `gold-*` scale for accents — since almost every
+  component already used `green-*` utility classes, this re-themes the
+  whole app from one file instead of a component-by-component rewrite.
+  Headings use [Fraunces](https://fonts.google.com/specimen/Fraunces) (a
+  characterful serif, via `font-display`) instead of the body sans
+  everywhere. Every emoji-as-icon (the biggest "AI-prototype" tell) on the
+  high-traffic surfaces — nav, landing, post/tool/vendor cards, badges,
+  login, empty states — is now a real [lucide-react](https://lucide.dev)
+  icon or, for Google/Facebook, an inline brand SVG
+  ([OAuthIcons.tsx](src/components/OAuthIcons.tsx), since lucide
+  deliberately excludes brand logos). Motion is Framer Motion throughout —
+  hero fade-in, count-up stats, staggered card reveals, tilt-on-hover
+  ([LandingClient.tsx](src/components/LandingClient.tsx)'s `TiltCard`),
+  active-nav-link underline, button press feedback — deliberately CSS/SVG
+  transforms rather than WebGL/three.js "3D": this is a mobile-first app
+  for potentially low-end phones and slow connections, and heavy 3D
+  rendering would cost more than it'd add. Some emoji remain in lower-
+  traffic surfaces (`/admin`, a few labels) — same treatment applies
+  whenever you touch those next: pull the icon from `lucide-react` (or add
+  the CSP-safe inline SVG pattern in `OAuthIcons.tsx`) instead of an emoji.
+- **Unified search + AI overview**: `/search` runs one `ilike` query per
+  table ([lib/data.ts](src/lib/data.ts)'s `searchAll()`) across crops,
+  equipment, vendors, schemes, and posts — simple substring matching, not a
+  full-text-search extension, which is enough at this data volume. When the
+  top result is a crop, an **on-demand** (button click, not automatic —
+  keeps OpenRouter usage bounded) AI overview
+  ([lib/ai/search-overview.ts](src/lib/ai/search-overview.ts)) generates
+  climate/farming-process/care/selling-consideration text via the same
+  OpenRouter setup as the safety classifier
+  ([lib/ai/openrouter.ts](src/lib/ai/openrouter.ts) factors out the shared
+  caller). The prompt explicitly tells the model not to invent vendor
+  names or prices — those come from Krisearch's own real data shown
+  alongside it — and the panel is labeled as AI-written general knowledge,
+  not verified platform data, the same honesty framing as
+  `crops.baseline_notes`. Fails soft: no key/network error/bad response all
+  just mean no panel, never a broken search page.
+- **Vendor self-submission**: `/vendors/new` was the actual missing piece
+  behind every "real vendor" ask so far — I can seed and verify a bounded
+  set of vendors myself, but the only way this directory reaches real
+  long-tail coverage is vendors (or farmers who know one) adding it
+  themselves. Guest-friendly like posting (`ensureSession()`, no login
+  screen), writes `profile_id = auth.uid()` so an owner could edit their
+  own listing later (the RLS update policy already allows it; there's no
+  edit UI yet). Deliberately no moderation queue yet — same open-by-default
+  model as posts, with `/admin`'s report/moderation tooling as the fallback
+  safety valve if this gets abused; a `status` (pending/approved) column
+  would be the next step if that becomes a real problem.
 - **Facts vs. community**: reference tables (`zones`, `crops`, `schemes`,
   `market_prices`, `equipment`) are seeded once and rarely change; everything
   experiential (`posts`, `comments`, `votes`) is user-generated and is the

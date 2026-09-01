@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Phone, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { GoogleIcon, FacebookIcon } from "@/components/OAuthIcons";
 
 type Tab = "phone" | "email";
 type Step = "enter" | "verify";
@@ -101,8 +104,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-1 text-xl font-bold">{isGuestUpgrade ? "Save your posts to an account" : t("joinTitle")}</h1>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-sm">
+      <h1 className="mb-1 font-display text-xl font-semibold">{isGuestUpgrade ? "Save your posts to an account" : t("joinTitle")}</h1>
       <p className="mb-5 text-sm text-neutral-500">
         {isGuestUpgrade
           ? "You've been posting as a guest — verify a phone or email to keep your name and history across devices."
@@ -111,22 +114,26 @@ export default function LoginPage() {
 
       {!isGuestUpgrade && (
         <div className="mb-4 flex flex-col gap-2">
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => signInWithOAuth("google")}
             disabled={busy}
-            className="flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white py-2.5 text-sm font-medium shadow-sm transition-shadow hover:shadow-md hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+            className="flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white py-2.5 text-sm font-medium shadow-sm transition-shadow hover:shadow-md disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900"
           >
-            🔍 {t("continueGoogle")}
-          </button>
-          <button
+            <GoogleIcon /> {t("continueGoogle")}
+          </motion.button>
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => signInWithOAuth("facebook")}
             disabled={busy}
-            className="flex items-center justify-center gap-2 rounded-full bg-[#1877F2] py-2.5 text-sm font-medium text-white shadow-sm transition-shadow hover:shadow-md hover:bg-[#1567d3] disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-full bg-[#1877F2] py-2.5 text-sm font-medium text-white shadow-sm transition-shadow hover:shadow-md disabled:opacity-50"
           >
-            📘 {t("continueFacebook")}
-          </button>
+            <FacebookIcon /> {t("continueFacebook")}
+          </motion.button>
           <div className="my-1 flex items-center gap-2 text-xs text-neutral-400">
             <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
             {t("or")}
@@ -143,9 +150,9 @@ export default function LoginPage() {
             setStep("enter");
             setError(null);
           }}
-          className={`flex-1 rounded-full py-1.5 ${tab === "phone" ? "bg-green-600 text-white" : "text-neutral-600 dark:text-neutral-300"}`}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-1.5 transition-colors ${tab === "phone" ? "bg-green-600 text-white" : "text-neutral-600 dark:text-neutral-300"}`}
         >
-          📱 Phone
+          <Phone className="h-3.5 w-3.5" /> Phone
         </button>
         <button
           type="button"
@@ -154,9 +161,9 @@ export default function LoginPage() {
             setStep("enter");
             setError(null);
           }}
-          className={`flex-1 rounded-full py-1.5 ${tab === "email" ? "bg-green-600 text-white" : "text-neutral-600 dark:text-neutral-300"}`}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-1.5 transition-colors ${tab === "email" ? "bg-green-600 text-white" : "text-neutral-600 dark:text-neutral-300"}`}
         >
-          ✉️ Email
+          <Mail className="h-3.5 w-3.5" /> Email
         </button>
       </div>
 
@@ -217,6 +224,6 @@ export default function LoginPage() {
         Phone sign-in requires an SMS provider configured in your Supabase project (Auth → Providers → Phone).
         Google/Facebook require OAuth apps configured there too (Auth → Providers).
       </p>
-    </div>
+    </motion.div>
   );
 }

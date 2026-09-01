@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 /**
@@ -10,7 +11,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
  * visit. Collapsed by default so the page leads with live content
  * (recent posts, prices, tools) instead of marketing copy.
  */
-export function CollapsibleSection({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+export function CollapsibleSection({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
@@ -21,14 +22,14 @@ export function CollapsibleSection({ title, icon, children }: { title: string; i
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between gap-2 px-4 py-3.5 text-left"
       >
-        <span className="flex items-center gap-2 font-semibold">
-          <span className="text-lg">{icon}</span>
+        <span className="flex items-center gap-2 font-display font-semibold">
+          <Icon className="h-5 w-5 text-green-600 dark:text-green-400" strokeWidth={2} />
           {title}
         </span>
         <span className="flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
           {open ? t("showLess") : t("learnMore")}
           <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            ▾
+            <ChevronDown className="h-3.5 w-3.5" />
           </motion.span>
         </span>
       </button>

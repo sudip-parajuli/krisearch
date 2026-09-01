@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, getAdminUserIds } from "@/lib/supabase/admin";
 import { updateReportStatus, setVerifiedBadge, updateFeedbackStatus } from "./actions";
@@ -15,7 +16,7 @@ export default async function AdminPage() {
     return (
       <div className="mx-auto max-w-md text-center">
         <EmptyState
-          icon="🔒"
+          icon={Lock}
           title="Not authorized"
           body="This area is restricted to admins listed in the ADMIN_USER_IDS environment variable."
         />

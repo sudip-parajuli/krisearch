@@ -1,4 +1,5 @@
 import "server-only";
+import { callOpenRouter } from "./openrouter";
 
 /**
  * Labels a farming remedy/answer as safe / caution / danger / unverified,
@@ -19,17 +20,6 @@ export type FactCheckResult = {
   rationale: string;
 } | null;
 
-const DEFAULT_MODELS = [
-  "nvidia/nemotron-3.5-lightning:free",
-  "minimax/minimax-m3:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-];
-
-function getModels(): string[] {
-  const configured = process.env.OPENROUTER_MODELS?.split(",").map((m) => m.trim()).filter(Boolean);
-  return configured && configured.length > 0 ? configured : DEFAULT_MODELS;
-}
-
 const SYSTEM_PROMPT = `You are a cautious agricultural safety reviewer for Nepali smallholder farmers. \
 You will be shown a farming question/context and one community-submitted answer (a remedy, \
 fertilizer suggestion, pesticide use, or similar advice). Judge ONLY the safety and plausibility \
@@ -49,44 +39,17 @@ export async function classifyRemedy(context: {
   postBody: string;
   answerBody: string;
 }): Promise<FactCheckResult> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) return null;
-
   const userPrompt = `Question/context:\nTitle: ${context.postTitle}\n${context.postBody}\n\nCommunity answer to judge:\n${context.answerBody}`;
 
-  try {
-    const models = getModels();
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://krisearch.app",
-        "X-Title": "Krisearch",
-      },
-      body: JSON.stringify({
-        model: models[0],
-        models, // OpenRouter tries the next model in this list on failure/rate-limit
-        temperature: 0,
-        max_tokens: 150,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-      // Keep this from hanging the comment/post flow indefinitely.
-      signal: AbortSignal.timeout(20_000),
-    });
-
-    if (!res.ok) return null;
-    const data = await res.json();
-    const raw: string | undefined = data?.choices?.[0]?.message?.content;
-    if (!raw) return null;
-
-    return parseVerdict(raw);
-  } catch {
-    return null; // network error, timeout, etc. — no signal, not a crash
-  }
+  const raw = await callOpenRouter(
+    [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: userPrompt },
+    ],
+    { maxTokens: 150, temperature: 0 }
+  );
+  if (!raw) return null;
+  return parseVerdict(raw);
 }
 
 function parseVerdict(raw: string): FactCheckResult {

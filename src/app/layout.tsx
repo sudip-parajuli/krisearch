@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Devanagari, Fraunces } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
@@ -20,6 +20,14 @@ const notoDevanagari = Noto_Sans_Devanagari({
   subsets: ["devanagari"],
 });
 
+// A characterful serif for headings — the single biggest lever against a
+// "default SaaS template" feel. Body text stays Geist Sans for readability.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  axes: ["opsz", "SOFT", "WONK"],
+});
+
 export const metadata: Metadata = {
   title: "Krisearch — कृषिSearch",
   description: "A community-driven agriculture platform for Nepali farmers.",
@@ -29,9 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ne"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-[#f6f8f6] text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <body className="flex min-h-full flex-col bg-[color:var(--background)] text-[color:var(--foreground)]">
         <LanguageProvider>
           <Navbar />
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">{children}</main>

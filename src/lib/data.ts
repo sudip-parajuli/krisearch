@@ -334,3 +334,43 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     cropCount: crops.count ?? 0,
   };
 }
+
+export type SearchResults = {
+  crops: Crop[];
+  equipment: Equipment[];
+  vendors: Vendor[];
+  schemes: Scheme[];
+  posts: PostRow[];
+};
+
+/** Simple ilike search across the facts layer + posts — one query per table, run in parallel. */
+export async function searchAll(query: string): Promise<SearchResults> {
+  const empty: SearchResults = { crops: [], equipment: [], vendors: [], schemes: [], posts: [] };
+  const q = query.trim();
+  if (!isSupabaseConfigured || !q) return empty;
+  const supabase = await createClient();
+  const like = `%${q}%`;
+
+  const [crops, equipment, vendors, schemes, posts] = await Promise.all([
+    supabase.from("crops").select("*").or(`name_en.ilike.${like},name_np.ilike.${like},baseline_notes.ilike.${like}`).limit(8),
+    supabase.from("equipment").select("*").or(`name.ilike.${like},name_np.ilike.${like},description.ilike.${like}`).limit(8),
+    supabase.from("vendors").select("*").or(`business_name.ilike.${like},contact_info.ilike.${like}`).limit(8),
+    supabase.from("schemes").select("*").or(`title.ilike.${like},description.ilike.${like}`).limit(6),
+    supabase
+      .from("posts")
+      .select(
+        "*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
+      )
+      .or(`title.ilike.${like},body.ilike.${like}`)
+      .order("created_at", { ascending: false })
+      .limit(6),
+  ]);
+
+  return {
+    crops: crops.data ?? [],
+    equipment: equipment.data ?? [],
+    vendors: vendors.data ?? [],
+    schemes: schemes.data ?? [],
+    posts: ((posts.data ?? []) as unknown as PostRow[]).map((p) => ({ ...p, vote_score: 0, comment_count: 0 })),
+  };
+}

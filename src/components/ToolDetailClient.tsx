@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Store, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { AvailabilityBadge } from "./AvailabilityBadge";
 import { PostCard } from "./PostCard";
@@ -47,7 +48,7 @@ export function ToolDetailClient({
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:border-red-400 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
           >
-            ▶ {t("watchVideo")}
+            <PlayCircle className="h-4 w-4" /> {t("watchVideo")}
           </a>
         )}
         <p className="mt-2 text-xs text-neutral-400">
@@ -101,7 +102,7 @@ export function ToolDetailClient({
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">{t("vendorsForThis")}</h2>
         {vendorOfferings.length === 0 ? (
-          <EmptyState icon="🏪" title={t("noVendorsYet")} />
+          <EmptyState icon={Store} title={t("noVendorsYet")} />
         ) : (
           <div className="flex flex-col gap-2">
             {vendorOfferings.map((v) => (

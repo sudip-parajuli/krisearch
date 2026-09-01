@@ -1,8 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf7f2;
+  --foreground: #211d18;
+
+  /* A distinct forest-green identity — replaces Tailwind's default vivid
+     green everywhere `green-*` utilities are already used across the app,
+     so this one edit re-themes the whole product without touching every
+     component file. */
+  --color-green-50: #f1f7f3;
+  --color-green-100: #dfeee4;
+  --color-green-200: #c1decb;
+  --color-green-300: #98c7a9;
+  --color-green-400: #6baa84;
+  --color-green-500: #468a65;
+  --color-green-600: #2f6e4e;
+  --color-green-700: #255a40;
+  --color-green-800: #1f4833;
+  --color-green-900: #1a3b2a;
+  --color-green-950: #0d2016;
+
+  /* Warm marigold/saffron accent — nods to mustard fields and turmeric
+     rather than a generic SaaS blue/purple accent. */
+  --color-gold-50: #fdf6e9;
+  --color-gold-100: #faebc9;
+  --color-gold-200: #f3d68d;
+  --color-gold-300: #ebc15a;
+  --color-gold-400: #e2a93d;
+  --color-gold-500: #d08d26;
+  --color-gold-600: #b8741e;
+  --color-gold-700: #96591a;
+  --color-gold-800: #784719;
+  --color-gold-900: #603a18;
 }
 
 @theme inline {
@@ -10,17 +39,55 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+
+  --color-green-50: var(--color-green-50);
+  --color-green-100: var(--color-green-100);
+  --color-green-200: var(--color-green-200);
+  --color-green-300: var(--color-green-300);
+  --color-green-400: var(--color-green-400);
+  --color-green-500: var(--color-green-500);
+  --color-green-600: var(--color-green-600);
+  --color-green-700: var(--color-green-700);
+  --color-green-800: var(--color-green-800);
+  --color-green-900: var(--color-green-900);
+  --color-green-950: var(--color-green-950);
+
+  --color-gold-50: var(--color-gold-50);
+  --color-gold-100: var(--color-gold-100);
+  --color-gold-200: var(--color-gold-200);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-400: var(--color-gold-400);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-700: var(--color-gold-700);
+  --color-gold-800: var(--color-gold-800);
+  --color-gold-900: var(--color-gold-900);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #171310;
+    --foreground: #f1ece2;
+
+    /* Lightened for AA contrast against a dark ground. */
+    --color-green-400: #7ec49b;
+    --color-green-500: #5fae83;
+    --color-green-600: #4c9c74;
+    --color-green-700: #3d8462;
+
+    --color-gold-400: #f0b053;
+    --color-gold-500: #e6a03e;
+    --color-gold-600: #cf8a2c;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--color-green-200);
+  color: var(--color-green-900);
 }

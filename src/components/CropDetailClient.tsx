@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen, MapPin, Store } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PostCard } from "./PostCard";
 import { ToolCard } from "./ToolCard";
@@ -32,7 +33,7 @@ export function CropDetailClient({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold">
+        <h1 className="font-display text-2xl font-semibold">
           {crop.name_en}
           {crop.name_np && <span className="ml-2 text-lg text-neutral-400">{crop.name_np}</span>}
         </h1>
@@ -45,7 +46,7 @@ export function CropDetailClient({
 
       <div className="rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
         <div className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
-          <span>📚</span> {t("generalGuidanceLong")}
+          <BookOpen className="h-3.5 w-3.5" /> {t("generalGuidanceLong")}
         </div>
         {crop.baseline_notes && (
           <p className="text-sm text-amber-900 dark:text-amber-200">{crop.baseline_notes}</p>
@@ -86,7 +87,7 @@ export function CropDetailClient({
       <div>
         <h2 className="mb-3 text-lg font-semibold">{t("vendorsForCrop")}</h2>
         {vendors.length === 0 ? (
-          <EmptyState icon="🏪" title={t("noVendorsForCrop")} />
+          <EmptyState icon={Store} title={t("noVendorsForCrop")} />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {vendors.map((v) => {
@@ -99,7 +100,9 @@ export function CropDetailClient({
                 >
                   <p className="font-semibold">{v.business_name}</p>
                   {v.district_id && districtById.get(v.district_id) && (
-                    <p className="text-xs text-neutral-400">📍 {districtById.get(v.district_id)!.name}</p>
+                    <p className="flex items-center gap-1 text-xs text-neutral-400">
+                      <MapPin className="h-3 w-3" /> {districtById.get(v.district_id)!.name}
+                    </p>
                   )}
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {buys && (

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ensureSession } from "@/lib/auth";
 
@@ -64,26 +66,30 @@ export function VoteButtons({
   }
 
   return (
-    <div className="flex flex-col items-center gap-0.5 text-neutral-500 dark:text-neutral-400">
-      <button
+    <div className="flex flex-col items-center gap-0.5 text-neutral-400 dark:text-neutral-500">
+      <motion.button
         type="button"
         aria-label="Upvote"
         disabled={busy}
+        whileTap={{ scale: 0.85 }}
         onClick={() => castVote(1)}
-        className={`rounded p-1 hover:bg-green-100 dark:hover:bg-green-950 ${myVote === 1 ? "text-green-600" : ""}`}
+        className={`rounded-lg p-1 transition-colors hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-950 ${myVote === 1 ? "text-green-600" : ""}`}
       >
-        ▲
-      </button>
-      <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{score}</span>
-      <button
+        <ChevronUp className="h-5 w-5" strokeWidth={2.5} />
+      </motion.button>
+      <motion.span key={score} initial={{ scale: 1.3 }} animate={{ scale: 1 }} className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+        {score}
+      </motion.span>
+      <motion.button
         type="button"
         aria-label="Downvote"
         disabled={busy}
+        whileTap={{ scale: 0.85 }}
         onClick={() => castVote(-1)}
-        className={`rounded p-1 hover:bg-red-100 dark:hover:bg-red-950 ${myVote === -1 ? "text-red-600" : ""}`}
+        className={`rounded-lg p-1 transition-colors hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-950 ${myVote === -1 ? "text-red-600" : ""}`}
       >
-        ▼
-      </button>
+        <ChevronDown className="h-5 w-5" strokeWidth={2.5} />
+      </motion.button>
     </div>
   );
 }

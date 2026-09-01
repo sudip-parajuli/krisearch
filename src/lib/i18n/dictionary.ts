@@ -16,6 +16,8 @@ export const dictionary = {
   navPrices: { ne: "मूल्य", en: "Prices" },
   navVendors: { ne: "विक्रेता", en: "Vendors" },
   navProfile: { ne: "प्रोफाइल", en: "Profile" },
+  navSearch: { ne: "खोज्नुहोस्", en: "Search" },
+  searchPlaceholder: { ne: "बाली, औजार, विक्रेता खोज्नुहोस्...", en: "Search crops, tools, vendors..." },
   navLogin: { ne: "लगइन", en: "Log in" },
   navAdmin: { ne: "एडमिन", en: "Admin" },
 
@@ -233,6 +235,49 @@ export const dictionary = {
   aiCaution: { ne: "AI: सावधानी अपनाउनुहोस्", en: "AI: use caution" },
   aiDanger: { ne: "AI: हानिकारक हुन सक्छ", en: "AI: possibly harmful" },
   aiUnverified: { ne: "AI: अपुष्ट", en: "AI: unverified" },
+
+  // search
+  searchTitle: { ne: "खोज्नुहोस्", en: "Search" },
+  searchEmptyPrompt: { ne: "बाली, औजार, विक्रेता वा योजना खोज्नुहोस्", en: "Search for a crop, tool, vendor, or scheme" },
+  searchNoResults: { ne: "कुनै नतिजा फेला परेन", en: "No results found" },
+  resultsCrops: { ne: "बालीहरू", en: "Crops" },
+  resultsTools: { ne: "औजार", en: "Tools" },
+  resultsVendors: { ne: "विक्रेता", en: "Vendors" },
+  resultsSchemes: { ne: "योजना", en: "Schemes" },
+  resultsPosts: { ne: "समुदाय पोस्ट", en: "Community posts" },
+  aiOverviewTitle: { ne: "AI सिंहावलोकन", en: "AI Overview" },
+  aiOverviewButton: { ne: "AI बाट पूरा जानकारी लिनुहोस्", en: "Get a full AI overview" },
+  aiOverviewLoading: { ne: "तयार गर्दै...", en: "Generating..." },
+  aiOverviewDisclaimer: {
+    ne: "AI ले लेखेको सामान्य जानकारी — यो प्लेटफर्मको वास्तविक डेटा (माथिको विक्रेता/औजार) होइन, सामान्य कृषि ज्ञान मात्र हो।",
+    en: "AI-written general knowledge — not this platform's verified data (the vendors/tools above are real); treat it as a starting point, not gospel.",
+  },
+  aiOverviewClimate: { ne: "मौसम/हावापानी", en: "Climate" },
+  aiOverviewProcess: { ne: "खेती प्रक्रिया", en: "Farming process" },
+  aiOverviewCare: { ne: "स्याहार र पोषण", en: "Care & nourishing" },
+  aiOverviewSelling: { ne: "बेच्ने बारे", en: "Selling considerations" },
+  aiOverviewUnavailable: { ne: "AI सुविधा अहिले उपलब्ध छैन", en: "AI overview isn't available right now" },
+
+  // add vendor
+  addVendorButton: { ne: "+ विक्रेता थप्नुहोस्", en: "+ Add vendor" },
+  addVendorTitle: { ne: "विक्रेता थप्नुहोस्", en: "Add a vendor" },
+  addVendorSubtitle: {
+    ne: "तपाईं आफैं विक्रेता हुनुहुन्छ, वा राम्रो विक्रेता चिन्नुहुन्छ? यहाँ थप्नुहोस् — साथी किसानहरूलाई फेला पार्न मद्दत गर्नुहोस्।",
+    en: "Are you a vendor yourself, or know a good one? Add them here — help fellow farmers find them.",
+  },
+  vendorNameLabel: { ne: "व्यवसायको नाम", en: "Business name" },
+  vendorTypeLabel: { ne: "विक्रेताको प्रकार", en: "Vendor type" },
+  vendorTypeCropBuyer: { ne: "बाली खरिददार", en: "Crop buyer" },
+  vendorTypeEquipmentSupplier: { ne: "औजार आपूर्तिकर्ता", en: "Equipment supplier" },
+  vendorTypeInputSupplier: { ne: "कृषि सामग्री आपूर्तिकर्ता", en: "Input supplier (seeds/fertilizer)" },
+  vendorTypeDroneService: { ne: "ड्रोन सेवा", en: "Drone service" },
+  vendorContactLabel: { ne: "सम्पर्क जानकारी", en: "Contact info" },
+  vendorContactPlaceholder: { ne: "फोन, इमेल, वा वेबसाइट", en: "Phone, email, or website" },
+  vendorCropsBoughtLabel: { ne: "कुन बाली किन्नुहुन्छ? (वैकल्पिक)", en: "Which crops do you buy? (optional)" },
+  vendorCropsSuppliedLabel: { ne: "कुन बालीको बीउ/सामग्री बेच्नुहुन्छ? (वैकल्पिक)", en: "Which crops do you supply seeds/inputs for? (optional)" },
+  submitVendor: { ne: "विक्रेता पेश गर्नुहोस्", en: "Submit vendor" },
+  submittingVendor: { ne: "पेश गर्दै...", en: "Submitting..." },
+  vendorSubmitted: { ne: "धन्यवाद! तपाईंको विक्रेता थपियो।", en: "Thanks! Your vendor listing has been added." },
 } as const;
 
 export type DictionaryKey = keyof typeof dictionary;
