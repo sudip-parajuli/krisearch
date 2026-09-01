@@ -51,16 +51,25 @@ run the files in [supabase/migrations/](supabase/migrations/) **in order**:
    `on conflict do nothing` with no real target, so re-running it would have
    silently duplicated every zone/district/crop/equipment row), plus
    `equipment.name_np` (Nepali name) and `equipment.video_url`
+6. `0006_avatars_and_verification.sql` — `profiles.avatar_url` +
+   `profiles.verification_method` (see "Feed authenticity" below), and the
+   same unique-constraint fix for `schemes.title`. **Until this runs, the
+   feed/homepage will show empty** — `getPosts()`'s join now selects
+   `avatar_url`/`verification_method` from `profiles`, and Postgres errors
+   the whole query on an unknown column; the app's fail-soft design turns
+   that into an empty state rather than a crash, but it does mean no posts
+   show until you run this one. Run it before anything else in this list if
+   you're catching up.
 
 Then load [supabase/seed.sql](supabase/seed.sql) — safe to re-run any time
-now that `0005` gives it real upsert targets. It has zones, districts, ~24
-crops, Nepal + global-tech equipment (with real source/video links checked
-live while writing it — see the file's comments for exactly what's
-verified vs. estimated), illustrative schemes, sample vendors, and a mix of
-placeholder + one **real, dated market-price snapshot** (Kalimati wholesale,
-fetched live from ramropatro.com — see the comment above that section).
-**Still not a verified production dataset end to end** — re-check scheme
-details before relying on them.
+now that `0005`/`0006` give it real upsert targets, and it now includes a
+one-time cleanup of any earlier fictional schemes/vendors. It has zones,
+districts, ~24 crops, Nepal + global-tech equipment (with real source/video
+links checked live while writing it), **real, sourced government schemes**
+and **real vendor organizations** (see "Real data, honestly scoped" below),
+and a mix of placeholder + real dated market-price snapshots. **Still not a
+verified production dataset end to end** — re-check scheme details
+periodically; things change.
 
 ### Demo content (optional, for a non-empty first impression)
 
@@ -144,17 +153,36 @@ account(s) to `ADMIN_USER_IDS` in `.env.local` (comma-separated) to unlock
 [/admin](src/app/admin/page.tsx) — market-price sync trigger, the feedback
 inbox, reviewing reported content, and granting/revoking `verified_badge`.
 
-### 7. Market price auto-sync — currently unwired, by design
+### 7. Market price auto-sync — real, working, against two official sources
 
-`/admin` has a "Sync Kalimati prices now" button and
+`/admin`'s "Sync real government prices now" button and
 [src/app/api/admin/sync-prices/route.ts](src/app/api/admin/sync-prices/route.ts)
-is built out as a generic adapter shell, but **no source is wired in**: the
-one credible unofficial Kalimati price API we evaluated is dead (confirmed —
-it 404s), and there's no official live Nepal government price API as of
-this writing. Rather than fake an integration, the endpoint reports that
-honestly and `/prices` stays farmer-submitted (via posts) until a real
-source is chosen. If you find/approve one, set `SOURCE_LABEL` in that route
-and add the fetch/mapping logic.
+scrape **today's** wholesale price table from two official Nepal government
+sites — no API exists for either, but both server-render a real HTML price
+table (verified live 2026-09-01), so this is a real scraper, not a
+fabricated integration:
+
+- **AMPIS** (ampis.gov.np) — the Department of Agriculture / Ministry of
+  Agriculture, Forests and Environment's own price system.
+- **Kalimati Fruits & Vegetable Market Development Board**
+  (kalimatimarket.gov.np) — the government body regulating Nepal's largest
+  wholesale market since 1995.
+
+See [src/lib/data-sources/](src/lib/data-sources/) for the parsers and the
+Nepali-commodity-name → crop mapping (deliberately scoped to what these
+sites actually list — vegetables/fruits, not grains or livestock). Every
+synced price row's `source` field names the exact matched commodity variety
+(e.g. "AMPIS — गोलभेंडा ठुलो (नेपाली)"), so nothing is hidden about which
+specific variety produced the number. **Runs automatically once a day** via
+Vercel Cron (see `vercel.json`) once you set `CRON_SECRET` — generate any
+long random string (`openssl rand -hex 32`) and set it as **both** a Vercel
+project environment variable and in your local `.env.local`; they must
+match. Without `CRON_SECRET` set, only the admin-triggered manual sync
+works. Since both sources are scraped HTML rather than a stable API, a
+future markup change on either site could break that source's parsing —
+the endpoint reports each source's success/row-count/error independently
+rather than failing silently, so that'd show up in the `/admin` sync
+response, not as a mysterious data gap.
 
 ## Project structure
 
@@ -165,19 +193,29 @@ src/
   lib/
     data.ts             all server-side data-fetch helpers (fail soft if
                          Supabase isn't configured yet)
-    supabase/           browser / server / middleware / admin client factories
+    data-sources/        real scrapers for the two govt price sources (ampis,
+                         kalimati) + the crop-name mapping between them
+    ai/factcheck.ts      the OpenRouter-based safety classifier
+    supabase/            browser / server / middleware / admin client factories
     i18n/                Nepali-first / English-toggle dictionary + context
   types/database.ts     hand-written types mirroring the SQL schema
 supabase/
-  migrations/           schema, RLS, storage bucket, guest/AI/feedback additions
-  seed.sql              illustrative starter data
+  migrations/           schema, RLS, storage bucket, guest/AI/feedback,
+                         avatars/verification additions
+  seed.sql              facts-layer data — real where we could verify it,
+                         explicit about what's still illustrative
+scripts/
+  apply-seed.mjs        applies seed.sql's data via the JS client instead of
+                         the SQL Editor (used when SQL Editor paste fails)
+  seed-demo.mjs          creates demo farmer accounts + posts + comments
+  remove-demo.mjs        removes everything seed-demo.mjs created
 ```
 
 ### Pages
 
 | Route | Purpose |
 |---|---|
-| `/` | Landing — hero, how-it-works, recent community activity |
+| `/` | Landing — hero, live stats, recent community activity, quick links, then collapsed "why"/"how it works" |
 | `/feed` | Main community feed — filter by crop/district/type, sort new/top |
 | `/post/new` | Create a post — guest-friendly (no login required), photo upload for pest/disease reports |
 | `/post/[id]` | Post detail + threaded comments, best-answer marking, AI safety badges |
@@ -250,7 +288,49 @@ account, not even the silent guest sign-in.
   low-severity tradeoff (scoped to the post's own author, on their own
   post's comments only) rather than adding column-level `GRANT`s for this
   MVP.
-- **Market price sync**: honestly unwired — see setup step 7 above.
+- **Market price sync**: real, against two official sources — see setup
+  step 7 above.
+- **Feed authenticity, without publishing anyone's phone number**: showing
+  "who really posted this" was a real ask, but the honest tradeoff is that
+  publishing a farmer's raw phone/email on a public page just invites spam
+  and harassment. Instead, [AuthorIdentity.tsx](src/components/AuthorIdentity.tsx)
+  shows an avatar (the real photo from Google/Facebook when that's how
+  someone signed in) plus a "verified via phone/email/Google/Facebook"
+  signal, or an explicit **Guest** pill when there's none — a real,
+  visible authenticity signal that doesn't dox anyone.
+  `profiles.contact_info` (a guest's optional self-reported phone/email)
+  stays private to admins/moderation, same as before.
+- **Real vendor/scheme data, honestly scoped**: seed.sql's schemes and
+  vendors were fully fictional placeholders before; both are now real,
+  sourced organizations we could actually verify (PM-AMP, the Krishi Gyan
+  Kendra network, a provincial Directorate of Agriculture Development
+  example, Mahindra Farm Equipment's Nepal dealer network, National Seed
+  Company Ltd.). We deliberately did **not** invent a real-sounding
+  drone-service company, a specific local agrovet, or a crop-buyer — we
+  couldn't verify one, so that vendor_type stays empty until a real
+  vendor (or a farmer recommending one) signs up through the platform
+  itself, which is the actual long-term source of vendor coverage —
+  Krisearch's whole model is community-submitted content, not a
+  pre-populated directory a handful of web searches could ever complete.
+  Local-government (municipality-level) scheme details are similarly
+  flagged as genuinely not centrally listable (753 municipalities) rather
+  than guessed at.
+- **Tools grid**: was one full-width section per category — with ~1 item in
+  several categories, that meant mostly-empty rows stacked vertically.
+  [ToolsClient.tsx](src/components/ToolsClient.tsx) now renders one
+  responsive grid (2–4 columns depending on viewport) with category filter
+  chips instead.
+- **Motion**: a real "modern, animated" pass via Framer Motion — hero
+  fade-in, count-up stat numbers ([AnimatedCounter.tsx](src/components/AnimatedCounter.tsx)),
+  staggered post-card reveal, and click-to-expand "why"/"how it works"
+  sections ([CollapsibleSection.tsx](src/components/CollapsibleSection.tsx))
+  instead of always-on marketing copy. Deliberately CSS/Framer Motion, not
+  WebGL/three.js "3D" — this is a mobile-first app for potentially
+  low-end phones and slow connections, and heavy 3D rendering would work
+  against that more than it would help.
+- **Homepage order**: hero → live stats → recent activity → quick links →
+  collapsed explainer sections, so a visitor sees real platform activity
+  before any marketing copy, matching the "get me useful info fast" ask.
 - **Language coverage**: the dictionary ([lib/i18n/dictionary.ts](src/lib/i18n/dictionary.ts))
   covers the landing page, feed, tools (list + detail), crops, schemes,
   prices, vendors, post/comment forms, login, and the feedback widget — the

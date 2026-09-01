@@ -130,6 +130,8 @@ export const dictionary = {
     en: "No login to browse. No long form to post — a name is optional, even that.",
   },
   exploreTitle: { ne: "अन्वेषण गर्नुहोस्", en: "Explore" },
+  learnMore: { ne: "थप जान्नुहोस्", en: "Learn more" },
+  showLess: { ne: "कम देखाउनुहोस्", en: "Show less" },
 
   // tools page
   toolsTitle: { ne: "आधुनिक औजार र प्रविधि", en: "Modern tools & technology" },

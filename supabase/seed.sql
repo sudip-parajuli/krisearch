@@ -109,27 +109,57 @@ insert into tags (name) values
   ('irrigation'), ('drought'), ('flood'), ('soil-health'), ('seed-source'), ('success-story')
 on conflict (name) do nothing;
 
--- ============ SCHEMES (illustrative examples — verify before relying on these) ============
+-- ============ SCHEMES — real, sourced (central/provincial) ============
+-- All checked live 2026-09-01. Note: Nepal's Ministry of Agriculture and
+-- Livestock Development was merged into the new Ministry of Agriculture,
+-- Forests and Environment on 2026-05-14 — it kept the moald.gov.np domain.
+-- Local-government (municipality) programs genuinely aren't centrally
+-- listable — see the last row, which says so honestly rather than
+-- fabricating a specific one.
 insert into schemes (title, description, subsidy_type, eligibility, how_to_apply, source_url, last_verified) values
   (
-    'Agricultural Equipment Subsidy (illustrative example)',
-    'Example placeholder describing a partial subsidy on approved farm machinery purchases, disbursed through provincial agriculture offices. Replace with the current, verified scheme text before launch.',
-    'equipment_purchase_subsidy',
-    'Registered smallholder farmers/farmer groups within the applicable province.',
-    'Apply through your local Provincial/District Agriculture Knowledge Center (Krishi Gyan Kendra) with land ownership and citizenship documents.',
-    'https://moald.gov.np',
-    '2026-01-15'
+    'Prime Minister Agriculture Modernization Project (PM-AMP)',
+    'Nepal''s largest national agriculture program, run by the Ministry of Agriculture, Forests and Environment (formerly the Ministry of Agriculture and Livestock Development, merged 2026-05-14). Supports commercial-scale agriculture through four tiers — Pocket (min. 10 ha), Block (min. 100 ha), Zone (min. 500 ha, with processing), and Super Zone (min. 1,000 ha, industrial-scale) — providing mechanization equipment, processing/marketing infrastructure, cold storage, and entrepreneurship development support. As of writing: 9,393 pockets, 1,699 blocks, 206 zones, and 21 super zones established nationwide.',
+    'mechanization_and_infrastructure_support',
+    'Farmer groups/cooperatives within an area already designated as a PM-AMP pocket/block/zone/super zone, or proposing a new one. Designation is based on "national priorities and local feasibility" set by the Program Management Unit.',
+    'Contact the PM-AMP Program Management Unit (Khumaltar, Lalitpur — phone 01-5446906, email pmamp.pmu@gmail.com) or your nearest subordinate Pocket/Block/Zone office listed on the PM-AMP website.',
+    'https://pmamp.gov.np/en/',
+    '2026-09-01'
   ),
   (
-    'Youth-Targeted Agri-Entrepreneurship Loan (illustrative example)',
-    'Example placeholder for a concessional-interest loan program aimed at youth starting commercial farming ventures. Replace with the current, verified scheme text before launch.',
-    'concessional_loan',
-    'Applicants aged 18-40 with a farm business plan, per current program rules.',
-    'Apply via a partner bank branch with your business plan and citizenship documents.',
-    'https://moald.gov.np',
-    '2026-02-01'
+    'Krishi Gyan Kendra (Agriculture Knowledge Center) network',
+    'Nepal''s network of local Agriculture Knowledge Centers, under each province''s Directorate of Agriculture Development, is the standard first point of contact for ANY government agriculture subsidy, technical advice, or equipment-support scheme — federal, provincial, or local. This is a general entry point, not one specific subsidy.',
+    'advisory_and_referral',
+    'Any registered farmer or farmer group.',
+    'Visit your district''s Krishi Gyan Kendra in person, or contact your province''s Directorate of Agriculture Development to ask what''s currently open (example — Koshi Province: 021-5165568, doadprovince1@gmail.com).',
+    'https://doad.koshi.gov.np/agriculture-knowledge-center',
+    '2026-09-01'
+  ),
+  (
+    'Provincial agriculture subsidy programs (varies by province)',
+    'Each of Nepal''s 7 provinces runs its own Directorate of Agriculture Development with province-specific annual subsidy programs (seeds, equipment, irrigation, etc.). These vary by province and by fiscal-year budget and are not standardized nationally — we can''t list all 7 here.',
+    'varies_by_province',
+    'Varies by province and program.',
+    'Contact your provincial Directorate of Agriculture Development directly. Example — Koshi Province: 021-5165568, doadprovince1@gmail.com, doad.koshi.gov.np. Other provinces have an equivalent office; ask your local Krishi Gyan Kendra which one covers you.',
+    'https://doad.koshi.gov.np/agriculture-knowledge-center',
+    '2026-09-01'
+  ),
+  (
+    'Local government (Gaunpalika / Nagarpalika) agriculture programs',
+    'Nepal''s 753 local governments each set their own small annual agriculture budget (seed/plough/irrigation subsidies, grants for youth agri-entrepreneurs, etc.) as part of local planning. Program details differ by municipality and aren''t centrally published anywhere we could verify — genuinely can''t be listed here specifically.',
+    'varies_by_municipality',
+    'Varies by municipality — typically residents/farmers registered within that local government''s area.',
+    'Contact your Ward Office or municipality''s agriculture branch directly, or ask at your local Krishi Gyan Kendra which local programs are currently open.',
+    null,
+    '2026-09-01'
   )
-on conflict do nothing;
+on conflict (title) do update set
+  description = excluded.description,
+  subsidy_type = excluded.subsidy_type,
+  eligibility = excluded.eligibility,
+  how_to_apply = excluded.how_to_apply,
+  source_url = excluded.source_url,
+  last_verified = excluded.last_verified;
 
 -- ============ EQUIPMENT (Nepal) ============
 -- source_url / video_url below were checked live while writing this file:
@@ -146,7 +176,7 @@ insert into equipment (name, name_np, category, description, how_it_helps, purch
     'Cuts spraying time and chemical exposure sharply versus manual knapsack spraying; most useful on medium-to-larger or pooled plots.',
     700000, 900000, 1500, 'per acre spray',
     'service_only',
-    1,
+    (select id from schemes where title = 'Prime Minister Agriculture Modernization Project (PM-AMP)'),
     null,
     'https://www.youtube.com/watch?v=0ksIHQ8KCfU',
     '2026-06-01',
@@ -160,7 +190,7 @@ insert into equipment (name, name_np, category, description, how_it_helps, purch
     'Right-sized mechanization for plots too small or steep for a full tractor; cuts land-prep labor and time.',
     120000, 220000, 1500, 'per day',
     'available_in_nepal',
-    1,
+    (select id from schemes where title = 'Prime Minister Agriculture Modernization Project (PM-AMP)'),
     null,
     'https://www.youtube.com/watch?v=F1baBchwgTg',
     '2026-05-10',
@@ -216,7 +246,7 @@ insert into equipment (name, name_np, category, description, how_it_helps, purch
     'Extends the growing season and protects high-value vegetables (tomato, cucumber, capsicum) from hail and erratic rain.',
     60000, 180000, null, null,
     'available_in_nepal',
-    1,
+    (select id from schemes where title = 'Prime Minister Agriculture Modernization Project (PM-AMP)'),
     null,
     null,
     '2026-05-01',
@@ -385,40 +415,50 @@ select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
 join crops c on c.name_en = v.crop_name
 on conflict (crop_id, market_name, date_recorded) do nothing;
 
--- ============ VENDORS (illustrative — not real businesses) ============
--- So /tools and /vendors don't show empty "no vendors yet" states out of
--- the box. contact_info numbers are placeholder-format, not real numbers.
-insert into vendors (business_name, vendor_type, district_id, contact_info, rating_avg)
-select v.business_name, v.vendor_type, d.id, v.contact_info, v.rating_avg
-from (values
-  ('Himal Agro Machinery Pvt. Ltd.', 'equipment_supplier', 'Kathmandu', '+977-98XXXXXXX1', 4.3),
-  ('Chitwan Custom Hiring Center', 'equipment_supplier', 'Chitwan', '+977-98XXXXXXX2', 4.6),
-  ('SkyField Drone Services', 'drone_service', 'Kaski', '+977-98XXXXXXX3', 4.5),
-  ('Terai Solar Solutions', 'equipment_supplier', 'Rupandehi', '+977-98XXXXXXX4', 4.1),
-  ('Kalimati Fresh Buyers Coop', 'crop_buyer', 'Kathmandu', '+977-98XXXXXXX5', 4.0),
-  ('Ilam Tea & Ginger Traders', 'crop_buyer', 'Ilam', '+977-98XXXXXXX6', 4.4),
-  ('Gorkha Agrovet Center', 'input_supplier', 'Gorkha', '+977-98XXXXXXX7', 3.9)
-) as v(business_name, vendor_type, district_name, contact_info, rating_avg)
-join districts d on d.name = v.district_name
+-- ============ VENDORS — real organizations only (checked live 2026-09-01) ============
+-- Deliberately short. We could only verify two organizations with a real,
+-- public, checkable presence relevant to individual farmers — a
+-- manufacturer's own Nepal dealer-network page, and a registered national
+-- seed company. We did NOT find a verifiable real drone-spraying service or
+-- a specific real local crop-buyer/agrovet with public contact info —
+-- rather than invent one, those vendor_type categories are left for real
+-- vendors/farmers to fill in themselves (Krisearch's whole model is
+-- community-submitted content, not a pre-populated directory).
+--
+-- Cleans up an earlier version of this file that seeded 7 entirely made-up
+-- businesses with fake phone numbers — safe no-op if you never had them.
+delete from vendor_equipment where vendor_id in (
+  select id from vendors where business_name in (
+    'Himal Agro Machinery Pvt. Ltd.', 'Chitwan Custom Hiring Center', 'SkyField Drone Services',
+    'Terai Solar Solutions', 'Kalimati Fresh Buyers Coop', 'Ilam Tea & Ginger Traders', 'Gorkha Agrovet Center'
+  )
+);
+delete from vendors where business_name in (
+  'Himal Agro Machinery Pvt. Ltd.', 'Chitwan Custom Hiring Center', 'SkyField Drone Services',
+  'Terai Solar Solutions', 'Kalimati Fresh Buyers Coop', 'Ilam Tea & Ginger Traders', 'Gorkha Agrovet Center'
+);
+
+insert into vendors (business_name, vendor_type, district_id, contact_info, rating_avg) values
+  (
+    'Mahindra Farm Equipment (Nepal)',
+    'equipment_supplier',
+    null, -- nationwide dealer network, not one location
+    'Official manufacturer page — use the Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal',
+    null
+  ),
+  (
+    'National Seed Company Ltd. (NSC)',
+    'input_supplier',
+    (select id from districts where name = 'Kathmandu'),
+    'Central Office, Kuleshwor, Kathmandu — see nscl.org.np for your nearest area office',
+    null
+  )
 on conflict (business_name, vendor_type) do update set
   district_id = excluded.district_id,
   contact_info = excluded.contact_info,
   rating_avg = excluded.rating_avg;
 
-insert into vendor_equipment (vendor_id, equipment_id, offering_type, price, price_unit)
-select ve.vendor_id, ve.equipment_id, ve.offering_type, ve.price, ve.price_unit from (
-  select v.id as vendor_id, e.id as equipment_id, x.offering_type, x.price, x.price_unit
-  from (values
-    ('Himal Agro Machinery Pvt. Ltd.', 'equipment_supplier', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'sale', 165000, 'one-time'),
-    ('Chitwan Custom Hiring Center', 'equipment_supplier', 'Mini-Tiller (Power Tiller, Walk-Behind)', 'rental', 1500, 'per day'),
-    ('SkyField Drone Services', 'drone_service', 'Agricultural Spraying Drone', 'service', 1500, 'per acre spray'),
-    ('Terai Solar Solutions', 'equipment_supplier', 'Solar Irrigation Pump', 'sale', 220000, 'one-time'),
-    ('Terai Solar Solutions', 'equipment_supplier', 'Solar Dryer (Post-Harvest)', 'sale', 55000, 'one-time'),
-    ('Gorkha Agrovet Center', 'input_supplier', 'Drip Irrigation Kit (per Ropani)', 'sale', 12000, 'per ropani')
-  ) as x(business_name, vendor_type, equipment_name, offering_type, price, price_unit)
-  join vendors v on v.business_name = x.business_name and v.vendor_type = x.vendor_type
-  join equipment e on e.name = x.equipment_name
-) as ve
-on conflict (vendor_id, equipment_id, offering_type) do update set
-  price = excluded.price,
-  price_unit = excluded.price_unit;
+-- No vendor_equipment rows: we couldn't verify which specific catalog item
+-- either real vendor actually stocks at what price — better to show
+-- "no vendors listed yet" on a tool page than fabricate a price/product link
+-- neither vendor has confirmed.

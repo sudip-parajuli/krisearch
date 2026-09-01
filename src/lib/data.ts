@@ -142,7 +142,7 @@ export type PostFilters = {
 };
 
 export type PostRow = Post & {
-  profiles: Pick<Profile, "id" | "display_name" | "verified_badge"> | null;
+  profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null;
   crops: Pick<Crop, "id" | "name_en" | "name_np"> | null;
   districts: Pick<District, "id" | "name"> | null;
   vote_score: number;
@@ -159,7 +159,7 @@ export async function getPosts(
   let query = supabase
     .from("posts")
     .select(
-      "*, profiles:author_id(id, display_name, verified_badge), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
+      "*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -211,7 +211,7 @@ export async function getPostById(id: string): Promise<PostRow | null> {
   const { data, error } = await supabase
     .from("posts")
     .select(
-      "*, profiles:author_id(id, display_name, verified_badge), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
+      "*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -230,18 +230,18 @@ export async function getPostById(id: string): Promise<PostRow | null> {
 }
 
 export async function getCommentsForPost(postId: string): Promise<
-  (Comment & { profiles: Pick<Profile, "id" | "display_name" | "verified_badge"> | null })[]
+  (Comment & { profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null })[]
 > {
   if (!isSupabaseConfigured) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("comments")
-    .select("*, profiles:author_id(id, display_name, verified_badge)")
+    .select("*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method)")
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
   if (error) return [];
   return (data ?? []) as (Comment & {
-    profiles: Pick<Profile, "id" | "display_name" | "verified_badge"> | null;
+    profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null;
   })[];
 }
 

@@ -23,9 +23,10 @@ export async function ensureSession(supabase: SupabaseClient): Promise<User> {
     );
   }
 
-  await supabase
-    .from("profiles")
-    .upsert({ id: anon.user.id, display_name: "Guest", role: "general", is_guest: true }, { onConflict: "id" });
+  await supabase.from("profiles").upsert(
+    { id: anon.user.id, display_name: "Guest", role: "general", is_guest: true, verification_method: "guest" },
+    { onConflict: "id" }
+  );
 
   return anon.user;
 }

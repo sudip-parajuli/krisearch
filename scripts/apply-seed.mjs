@@ -135,42 +135,77 @@ async function main() {
   const tagRows = ["blight", "pest", "organic", "urgent", "good-buyer", "scam-alert", "irrigation", "drought", "flood", "soil-health", "seed-source", "success-story"].map((name) => ({ name }));
   fail("tags", (await supabase.from("tags").upsert(tagRows, { onConflict: "name", ignoreDuplicates: true })).error);
 
-  console.log("Schemes (no unique constraint — checking by title before insert)...");
+  console.log("Retiring the old illustrative-placeholder schemes (real ones below)...");
+  const retiredTitles = [
+    "Agricultural Equipment Subsidy (illustrative example)",
+    "Youth-Targeted Agri-Entrepreneurship Loan (illustrative example)",
+  ];
+  const { data: retiredSchemes } = await supabase.from("schemes").select("id, title").in("title", retiredTitles);
+  if (retiredSchemes?.length) {
+    const retiredIds = retiredSchemes.map((s) => s.id);
+    // equipment.related_scheme_id has no ON DELETE clause -> must be cleared first or the delete is rejected.
+    await supabase.from("equipment").update({ related_scheme_id: null }).in("related_scheme_id", retiredIds);
+    fail("delete retired schemes", (await supabase.from("schemes").delete().in("id", retiredIds)).error);
+  }
+
+  console.log("Schemes — real, sourced (central/provincial; local noted honestly as not centrally listable)...");
+  // All checked live 2026-09-01. Note: Nepal's Ministry of Agriculture and
+  // Livestock Development was merged into the new Ministry of Agriculture,
+  // Forests and Environment on 2026-05-14 — it kept the moald.gov.np domain.
   const schemeRows = [
     {
-      title: "Agricultural Equipment Subsidy (illustrative example)",
-      description: "Example placeholder describing a partial subsidy on approved farm machinery purchases, disbursed through provincial agriculture offices. Replace with the current, verified scheme text before launch.",
-      subsidy_type: "equipment_purchase_subsidy",
-      eligibility: "Registered smallholder farmers/farmer groups within the applicable province.",
-      how_to_apply: "Apply through your local Provincial/District Agriculture Knowledge Center (Krishi Gyan Kendra) with land ownership and citizenship documents.",
-      source_url: "https://moald.gov.np",
-      last_verified: "2026-01-15",
+      title: "Prime Minister Agriculture Modernization Project (PM-AMP)",
+      description: "Nepal's largest national agriculture program, run by the Ministry of Agriculture, Forests and Environment (formerly the Ministry of Agriculture and Livestock Development, merged 2026-05-14). Supports commercial-scale agriculture through four tiers — Pocket (min. 10 ha), Block (min. 100 ha), Zone (min. 500 ha, with processing), and Super Zone (min. 1,000 ha, industrial-scale) — providing mechanization equipment, processing/marketing infrastructure, cold storage, and entrepreneurship development support. As of writing: 9,393 pockets, 1,699 blocks, 206 zones, and 21 super zones established nationwide.",
+      subsidy_type: "mechanization_and_infrastructure_support",
+      eligibility: "Farmer groups/cooperatives within an area already designated as a PM-AMP pocket/block/zone/super zone, or proposing a new one. Designation is based on \"national priorities and local feasibility\" set by the Program Management Unit.",
+      how_to_apply: "Contact the PM-AMP Program Management Unit (Khumaltar, Lalitpur — phone 01-5446906, email pmamp.pmu@gmail.com) or your nearest subordinate Pocket/Block/Zone office listed on the PM-AMP website.",
+      source_url: "https://pmamp.gov.np/en/",
+      last_verified: "2026-09-01",
     },
     {
-      title: "Youth-Targeted Agri-Entrepreneurship Loan (illustrative example)",
-      description: "Example placeholder for a concessional-interest loan program aimed at youth starting commercial farming ventures. Replace with the current, verified scheme text before launch.",
-      subsidy_type: "concessional_loan",
-      eligibility: "Applicants aged 18-40 with a farm business plan, per current program rules.",
-      how_to_apply: "Apply via a partner bank branch with your business plan and citizenship documents.",
-      source_url: "https://moald.gov.np",
-      last_verified: "2026-02-01",
+      title: "Krishi Gyan Kendra (Agriculture Knowledge Center) network",
+      description: "Nepal's network of local Agriculture Knowledge Centers, under each province's Directorate of Agriculture Development, is the standard first point of contact for ANY government agriculture subsidy, technical advice, or equipment-support scheme — federal, provincial, or local. This is a general entry point, not one specific subsidy.",
+      subsidy_type: "advisory_and_referral",
+      eligibility: "Any registered farmer or farmer group.",
+      how_to_apply: "Visit your district's Krishi Gyan Kendra in person, or contact your province's Directorate of Agriculture Development to ask what's currently open (example — Koshi Province: 021-5165568, doadprovince1@gmail.com).",
+      source_url: "https://doad.koshi.gov.np/agriculture-knowledge-center",
+      last_verified: "2026-09-01",
+    },
+    {
+      title: "Provincial agriculture subsidy programs (varies by province)",
+      description: "Each of Nepal's 7 provinces runs its own Directorate of Agriculture Development with province-specific annual subsidy programs (seeds, equipment, irrigation, etc.). These vary by province and by fiscal-year budget and are not standardized nationally — we can't list all 7 here.",
+      subsidy_type: "varies_by_province",
+      eligibility: "Varies by province and program.",
+      how_to_apply: "Contact your provincial Directorate of Agriculture Development directly. Example — Koshi Province: 021-5165568, doadprovince1@gmail.com, doad.koshi.gov.np. Other provinces have an equivalent office; ask your local Krishi Gyan Kendra which one covers you.",
+      source_url: "https://doad.koshi.gov.np/agriculture-knowledge-center",
+      last_verified: "2026-09-01",
+    },
+    {
+      title: "Local government (Gaunpalika / Nagarpalika) agriculture programs",
+      description: "Nepal's 753 local governments each set their own small annual agriculture budget (seed/plough/irrigation subsidies, grants for youth agri-entrepreneurs, etc.) as part of local planning. Program details differ by municipality and aren't centrally published anywhere we could verify — genuinely can't be listed here specifically.",
+      subsidy_type: "varies_by_municipality",
+      eligibility: "Varies by municipality — typically residents/farmers registered within that local government's area.",
+      how_to_apply: "Contact your Ward Office or municipality's agriculture branch directly, or ask at your local Krishi Gyan Kendra which local programs are currently open.",
+      source_url: null,
+      last_verified: "2026-09-01",
     },
   ];
   for (const s of schemeRows) {
     const { data: existing } = await supabase.from("schemes").select("id").eq("title", s.title).maybeSingle();
-    if (!existing) fail(`scheme "${s.title}"`, (await supabase.from("schemes").insert(s)).error);
+    if (existing) fail(`update scheme "${s.title}"`, (await supabase.from("schemes").update(s).eq("id", existing.id)).error);
+    else fail(`insert scheme "${s.title}"`, (await supabase.from("schemes").insert(s)).error);
   }
   const { data: schemes } = await supabase.from("schemes").select("id, title");
   const schemeId = (title) => schemes.find((s) => s.title === title)?.id;
 
   console.log("Equipment (Nepal)...");
   const nepalEquipment = [
-    { name: "Agricultural Spraying Drone", name_np: "कृषि स्प्रे ड्रोन", category: "drone", description: "Multirotor drone fitted with a tank and nozzles for pesticide/fertilizer spraying.", how_it_helps: "Cuts spraying time and chemical exposure sharply versus manual knapsack spraying; most useful on medium-to-larger or pooled plots.", purchase_price_min: 700000, purchase_price_max: 900000, rental_price: 1500, rental_price_unit: "per acre spray", availability_status: "service_only", related_scheme_id: schemeId("Agricultural Equipment Subsidy (illustrative example)"), source_url: null, video_url: "https://www.youtube.com/watch?v=0ksIHQ8KCfU", last_verified: "2026-06-01", scope: "nepal" },
-    { name: "Mini-Tiller (Power Tiller, Walk-Behind)", name_np: "मिनी टिलर (पावर टिलर)", category: "machinery", description: "Small walk-behind tiller sized for terraced and fragmented hill/Terai plots.", how_it_helps: "Right-sized mechanization for plots too small or steep for a full tractor; cuts land-prep labor and time.", purchase_price_min: 120000, purchase_price_max: 220000, rental_price: 1500, rental_price_unit: "per day", availability_status: "available_in_nepal", related_scheme_id: schemeId("Agricultural Equipment Subsidy (illustrative example)"), source_url: null, video_url: "https://www.youtube.com/watch?v=F1baBchwgTg", last_verified: "2026-05-10", scope: "nepal" },
+    { name: "Agricultural Spraying Drone", name_np: "कृषि स्प्रे ड्रोन", category: "drone", description: "Multirotor drone fitted with a tank and nozzles for pesticide/fertilizer spraying.", how_it_helps: "Cuts spraying time and chemical exposure sharply versus manual knapsack spraying; most useful on medium-to-larger or pooled plots.", purchase_price_min: 700000, purchase_price_max: 900000, rental_price: 1500, rental_price_unit: "per acre spray", availability_status: "service_only", related_scheme_id: schemeId("Prime Minister Agriculture Modernization Project (PM-AMP)"), source_url: null, video_url: "https://www.youtube.com/watch?v=0ksIHQ8KCfU", last_verified: "2026-06-01", scope: "nepal" },
+    { name: "Mini-Tiller (Power Tiller, Walk-Behind)", name_np: "मिनी टिलर (पावर टिलर)", category: "machinery", description: "Small walk-behind tiller sized for terraced and fragmented hill/Terai plots.", how_it_helps: "Right-sized mechanization for plots too small or steep for a full tractor; cuts land-prep labor and time.", purchase_price_min: 120000, purchase_price_max: 220000, rental_price: 1500, rental_price_unit: "per day", availability_status: "available_in_nepal", related_scheme_id: schemeId("Prime Minister Agriculture Modernization Project (PM-AMP)"), source_url: null, video_url: "https://www.youtube.com/watch?v=F1baBchwgTg", last_verified: "2026-05-10", scope: "nepal" },
     { name: "Solar Irrigation Pump", name_np: "सोलार सिँचाइ पम्प", category: "solar", description: "Solar-powered water pump for lifting irrigation water without grid electricity or diesel.", how_it_helps: "Removes recurring diesel cost and gives off-grid plots reliable irrigation access.", purchase_price_min: 150000, purchase_price_max: 350000, rental_price: null, rental_price_unit: null, availability_status: "available_in_nepal", related_scheme_id: null, source_url: null, video_url: null, last_verified: "2026-04-20", scope: "nepal" },
     { name: "Drip Irrigation Kit (per Ropani)", name_np: "ड्रिप सिँचाइ किट", category: "irrigation", description: "Tubing, emitters, and filter kit sized for small-plot drip irrigation.", how_it_helps: "Cuts water use substantially versus flood irrigation and improves yield consistency for vegetables.", purchase_price_min: 8000, purchase_price_max: 25000, rental_price: null, rental_price_unit: null, availability_status: "available_in_nepal", related_scheme_id: null, source_url: "https://hardwarepasal.com/category/irrigation", video_url: null, last_verified: "2026-08-30", scope: "nepal" },
     { name: "IoT Soil-Moisture Sensor Kit", name_np: "माटो-आर्द्रता सेन्सर किट", category: "iot_sensor", description: "Wireless soil-moisture/temperature sensors with a phone-app dashboard.", how_it_helps: "Tells farmers when a plot actually needs water instead of guessing, saving both water and pump-running cost. NGO-backed pilots (e.g. AgriSmart-style programs) currently subsidize kits in a handful of districts rather than this being an open retail product yet.", purchase_price_min: 15000, purchase_price_max: 45000, rental_price: null, rental_price_unit: null, availability_status: "pilot_stage", related_scheme_id: null, source_url: null, video_url: null, last_verified: "2026-03-15", scope: "nepal" },
-    { name: "Small Greenhouse / Polyhouse Kit", name_np: "साना ग्रीनहाउस / पोलिहाउस किट", category: "greenhouse", description: "Bamboo or steel-frame polyhouse kit sized for small vegetable plots (roughly 20x8 m).", how_it_helps: "Extends the growing season and protects high-value vegetables (tomato, cucumber, capsicum) from hail and erratic rain.", purchase_price_min: 60000, purchase_price_max: 180000, rental_price: null, rental_price_unit: null, availability_status: "available_in_nepal", related_scheme_id: schemeId("Agricultural Equipment Subsidy (illustrative example)"), source_url: null, video_url: null, last_verified: "2026-05-01", scope: "nepal" },
+    { name: "Small Greenhouse / Polyhouse Kit", name_np: "साना ग्रीनहाउस / पोलिहाउस किट", category: "greenhouse", description: "Bamboo or steel-frame polyhouse kit sized for small vegetable plots (roughly 20x8 m).", how_it_helps: "Extends the growing season and protects high-value vegetables (tomato, cucumber, capsicum) from hail and erratic rain.", purchase_price_min: 60000, purchase_price_max: 180000, rental_price: null, rental_price_unit: null, availability_status: "available_in_nepal", related_scheme_id: schemeId("Prime Minister Agriculture Modernization Project (PM-AMP)"), source_url: null, video_url: null, last_verified: "2026-05-01", scope: "nepal" },
     { name: "Solar Dryer (Post-Harvest)", name_np: "सोलार ड्रायर", category: "post_harvest", description: "Solar-powered dehydration unit for grains, spices, and fruit.", how_it_helps: "Reduces post-harvest spoilage and lets farmers sell dried/higher-value product instead of raw perishables.", purchase_price_min: 30000, purchase_price_max: 90000, rental_price: null, rental_price_unit: null, availability_status: "pilot_stage", related_scheme_id: null, source_url: null, video_url: null, last_verified: "2026-02-10", scope: "nepal" },
     { name: "Farm Management Mobile App", name_np: "कृषि व्यवस्थापन मोबाइल एप", category: "digital_app", description: "Smartphone app for tracking planting dates, expenses, and reminders.", how_it_helps: "Helps farmers plan input timing and keep basic records without paper bookkeeping.", purchase_price_min: 0, purchase_price_max: 0, rental_price: null, rental_price_unit: null, availability_status: "available_in_nepal", related_scheme_id: null, source_url: null, video_url: null, last_verified: "2026-06-15", scope: "nepal" },
   ];
@@ -209,41 +244,55 @@ async function main() {
   }));
   fail("market_prices", (await supabase.from("market_prices").upsert(priceRows, { onConflict: "crop_id,market_name,date_recorded", ignoreDuplicates: true })).error);
 
-  console.log("Vendors...");
+  console.log("Retiring the old made-up vendor listings (real ones below)...");
+  // These were fabricated placeholder businesses with fake phone numbers —
+  // not acceptable to keep once "real vendor data" was explicitly asked for.
+  const retiredVendorNames = [
+    "Himal Agro Machinery Pvt. Ltd.", "Chitwan Custom Hiring Center", "SkyField Drone Services",
+    "Terai Solar Solutions", "Kalimati Fresh Buyers Coop", "Ilam Tea & Ginger Traders", "Gorkha Agrovet Center",
+  ];
+  const { data: retiredVendors } = await supabase.from("vendors").select("id").in("business_name", retiredVendorNames);
+  if (retiredVendors?.length) {
+    const retiredIds = retiredVendors.map((v) => v.id);
+    await supabase.from("vendor_equipment").delete().in("vendor_id", retiredIds);
+    fail("delete retired vendors", (await supabase.from("vendors").delete().in("id", retiredIds)).error);
+  }
+
+  console.log("Vendors — real organizations only (checked live 2026-09-01)...");
+  // Deliberately short. We could only verify two organizations with a real,
+  // public, checkable presence relevant to individual farmers — a
+  // manufacturer's own Nepal dealer-network page, and a registered national
+  // seed company. We did NOT find a verifiable real drone-spraying service
+  // company or a specific real local crop-buyer/agrovet with public contact
+  // info — rather than invent one, those vendor_type categories are left for
+  // real vendors/farmers to fill in themselves via the platform (Krisearch's
+  // whole model is community-submitted content, not a pre-populated
+  // directory) — see the note in README.
   const vendorRows = [
-    ["Himal Agro Machinery Pvt. Ltd.", "equipment_supplier", "Kathmandu", "+977-98XXXXXXX1", 4.3],
-    ["Chitwan Custom Hiring Center", "equipment_supplier", "Chitwan", "+977-98XXXXXXX2", 4.6],
-    ["SkyField Drone Services", "drone_service", "Kaski", "+977-98XXXXXXX3", 4.5],
-    ["Terai Solar Solutions", "equipment_supplier", "Rupandehi", "+977-98XXXXXXX4", 4.1],
-    ["Kalimati Fresh Buyers Coop", "crop_buyer", "Kathmandu", "+977-98XXXXXXX5", 4.0],
-    ["Ilam Tea & Ginger Traders", "crop_buyer", "Ilam", "+977-98XXXXXXX6", 4.4],
-    ["Gorkha Agrovet Center", "input_supplier", "Gorkha", "+977-98XXXXXXX7", 3.9],
-  ].map(([business_name, vendor_type, district, contact_info, rating_avg]) => ({
-    business_name, vendor_type, district_id: districtId(district), contact_info, rating_avg,
-  }));
-  fail("vendors", (await supabase.from("vendors").upsert(vendorRows, { onConflict: "business_name,vendor_type" })).error);
-
-  const { data: vendors } = await supabase.from("vendors").select("id, business_name, vendor_type");
-  const { data: equipment } = await supabase.from("equipment").select("id, name");
-  const vendorIdFor = (name, type) => vendors.find((v) => v.business_name === name && v.vendor_type === type)?.id;
-  const equipmentIdFor = (name) => equipment.find((e) => e.name === name)?.id;
-
-  console.log("Vendor <-> equipment offerings...");
-  const vendorEquipmentRows = [
-    ["Himal Agro Machinery Pvt. Ltd.", "equipment_supplier", "Mini-Tiller (Power Tiller, Walk-Behind)", "sale", 165000, "one-time"],
-    ["Chitwan Custom Hiring Center", "equipment_supplier", "Mini-Tiller (Power Tiller, Walk-Behind)", "rental", 1500, "per day"],
-    ["SkyField Drone Services", "drone_service", "Agricultural Spraying Drone", "service", 1500, "per acre spray"],
-    ["Terai Solar Solutions", "equipment_supplier", "Solar Irrigation Pump", "sale", 220000, "one-time"],
-    ["Terai Solar Solutions", "equipment_supplier", "Solar Dryer (Post-Harvest)", "sale", 55000, "one-time"],
-    ["Gorkha Agrovet Center", "input_supplier", "Drip Irrigation Kit (per Ropani)", "sale", 12000, "per ropani"],
-  ].map(([vendorName, vendorType, equipmentName, offering_type, price, price_unit]) => ({
-    vendor_id: vendorIdFor(vendorName, vendorType),
-    equipment_id: equipmentIdFor(equipmentName),
-    offering_type,
-    price,
-    price_unit,
-  }));
-  fail("vendor_equipment", (await supabase.from("vendor_equipment").upsert(vendorEquipmentRows, { onConflict: "vendor_id,equipment_id,offering_type" })).error);
+    {
+      business_name: "Mahindra Farm Equipment (Nepal)",
+      vendor_type: "equipment_supplier",
+      district_id: null, // nationwide dealer network, not one location
+      contact_info: "Official manufacturer page — use the Nepal dealer locator for your nearest of 14 authorized dealers: mahindrafarmequipment.com/nepal",
+      rating_avg: null,
+    },
+    {
+      business_name: "National Seed Company Ltd. (NSC)",
+      vendor_type: "input_supplier",
+      district_id: districtId("Kathmandu"),
+      contact_info: "Central Office, Kuleshwor, Kathmandu — see nscl.org.np for your nearest area office",
+      rating_avg: null,
+    },
+  ];
+  for (const v of vendorRows) {
+    const { data: existing } = await supabase.from("vendors").select("id").eq("business_name", v.business_name).eq("vendor_type", v.vendor_type).maybeSingle();
+    if (existing) fail(`update vendor "${v.business_name}"`, (await supabase.from("vendors").update(v).eq("id", existing.id)).error);
+    else fail(`insert vendor "${v.business_name}"`, (await supabase.from("vendors").insert(v)).error);
+  }
+  // No vendor_equipment rows: we couldn't verify which specific catalog item
+  // either real vendor actually stocks at what price — better to leave that
+  // section showing "no vendors listed yet" than fabricate a price/product
+  // link neither vendor has confirmed.
 
   console.log("\nDone.");
 }

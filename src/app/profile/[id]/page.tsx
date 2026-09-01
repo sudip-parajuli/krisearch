@@ -17,10 +17,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     <div className="flex flex-col gap-6">
       <SupabaseSetupNotice />
 
-      <div className="flex items-start gap-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-100 text-2xl dark:bg-green-950">
-          🧑‍🌾
-        </div>
+      <div className="flex items-start gap-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        {profile.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={profile.avatar_url} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-100 text-2xl dark:bg-green-950">
+            {profile.is_guest ? "👤" : "🧑‍🌾"}
+          </div>
+        )}
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold">{profile.display_name ?? "Farmer"}</h1>

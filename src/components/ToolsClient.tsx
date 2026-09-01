@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ToolCard } from "./ToolCard";
 import { ScopeTabs } from "./ScopeTabs";
@@ -17,6 +18,17 @@ const categoryOrder = [
   "digital_app",
 ];
 
+const categoryIcons: Record<string, string> = {
+  drone: "🛸",
+  iot_sensor: "📡",
+  irrigation: "💧",
+  machinery: "🚜",
+  greenhouse: "🏡",
+  solar: "☀️",
+  post_harvest: "📦",
+  digital_app: "📱",
+};
+
 const categoryLabels: Record<string, { ne: string; en: string }> = {
   drone: { ne: "ड्रोन", en: "Drones" },
   machinery: { ne: "मेसिनरी", en: "Machinery" },
@@ -30,18 +42,19 @@ const categoryLabels: Record<string, { ne: string; en: string }> = {
 
 export function ToolsClient({ equipment, scope }: { equipment: Equipment[]; scope: "nepal" | "global" }) {
   const { t, lang } = useLanguage();
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const byCategory = new Map<string, Equipment[]>();
-  for (const eq of equipment) {
-    const cat = eq.category ?? "other";
-    byCategory.set(cat, [...(byCategory.get(cat) ?? []), eq]);
-  }
+  const presentCategories = useMemo(
+    () => categoryOrder.filter((cat) => equipment.some((e) => e.category === cat)),
+    [equipment]
+  );
+  const visible = activeCategory ? equipment.filter((e) => e.category === activeCategory) : equipment;
 
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">{t("toolsTitle")}</h1>
       <p className="mb-4 text-sm text-neutral-500">{t("toolsSubtitle")}</p>
-      <div className="mb-5">
+      <div className="mb-4">
         <ScopeTabs />
       </div>
       {scope === "global" && (
@@ -50,24 +63,44 @@ export function ToolsClient({ equipment, scope }: { equipment: Equipment[]; scop
         </p>
       )}
 
-      {equipment.length === 0 ? (
+      {/* One unified grid, filtered by a category chip row — not a full-width
+          section per category, which left mostly-empty rows when a category
+          has only one or two items. */}
+      <div className="mb-5 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveCategory(null)}
+          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            activeCategory === null
+              ? "bg-green-600 text-white"
+              : "bg-white text-neutral-600 shadow-sm hover:bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          }`}
+        >
+          {lang === "ne" ? "सबै" : "All"} ({equipment.length})
+        </button>
+        {presentCategories.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setActiveCategory(cat)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              activeCategory === cat
+                ? "bg-green-600 text-white"
+                : "bg-white text-neutral-600 shadow-sm hover:bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            }`}
+          >
+            {categoryIcons[cat]} {categoryLabels[cat]?.[lang] ?? cat}
+          </button>
+        ))}
+      </div>
+
+      {visible.length === 0 ? (
         <EmptyState title={t("noToolsYet")} />
       ) : (
-        <div className="flex flex-col gap-6">
-          {categoryOrder
-            .filter((cat) => byCategory.has(cat))
-            .map((cat) => (
-              <div key={cat}>
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-                  {categoryLabels[cat]?.[lang] ?? cat}
-                </h2>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {byCategory.get(cat)!.map((eq) => (
-                    <ToolCard key={eq.id} equipment={eq} />
-                  ))}
-                </div>
-              </div>
-            ))}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {visible.map((eq) => (
+            <ToolCard key={eq.id} equipment={eq} />
+          ))}
         </div>
       )}
     </div>

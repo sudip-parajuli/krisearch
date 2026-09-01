@@ -99,6 +99,7 @@ export type Equipment = {
 
 export type ProfileRole = "farmer" | "dealer" | "extension_officer" | "general";
 export type VerifiedBadge = "extension_officer" | "agrovet" | null;
+export type VerificationMethod = "phone" | "email" | "google" | "facebook" | "guest" | null;
 
 export type Profile = {
   id: string;
@@ -111,6 +112,8 @@ export type Profile = {
   created_at: string;
   contact_info: string | null;
   is_guest: boolean;
+  avatar_url: string | null;
+  verification_method: VerificationMethod;
 };
 
 /** AI fact-check signal on a post/comment's content (see lib/ai/factcheck.ts). */
@@ -223,7 +226,7 @@ export type Feedback = {
 
 // Convenience: a post enriched with the joins pages commonly need.
 export type PostWithRelations = Post & {
-  profiles: Pick<Profile, "id" | "display_name" | "verified_badge"> | null;
+  profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null;
   crops: Pick<Crop, "id" | "name_en" | "name_np"> | null;
   districts: Pick<District, "id" | "name"> | null;
   vote_score?: number;

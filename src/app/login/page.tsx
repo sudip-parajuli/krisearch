@@ -27,14 +27,14 @@ export default function LoginPage() {
     });
   }, []);
 
-  async function ensureProfile(userId: string, fallbackName: string) {
+  async function ensureProfile(userId: string, fallbackName: string, method: "phone" | "email") {
     const supabase = createClient();
     const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).maybeSingle();
     if (!existing) {
-      await supabase.from("profiles").insert({ id: userId, display_name: fallbackName, role: "farmer" });
+      await supabase.from("profiles").insert({ id: userId, display_name: fallbackName, role: "farmer", verification_method: method });
     } else {
-      // Guest upgrading to a verified identity — drop the guest flag.
-      await supabase.from("profiles").update({ is_guest: false }).eq("id", userId);
+      // Guest upgrading to a verified identity — drop the guest flag and record how they verified.
+      await supabase.from("profiles").update({ is_guest: false, verification_method: method }).eq("id", userId);
     }
   }
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
       setError(err?.message ?? "Invalid code.");
       return;
     }
-    await ensureProfile(data.user.id, tab === "phone" ? phone : email.split("@")[0]);
+    await ensureProfile(data.user.id, tab === "phone" ? phone : email.split("@")[0], tab);
     router.push(`/profile/${data.user.id}`);
     router.refresh();
   }

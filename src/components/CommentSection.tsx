@@ -7,11 +7,12 @@ import { ensureSession, applyGuestIdentity } from "@/lib/auth";
 import { ReportButton } from "./ReportButton";
 import { AIVerdictBadge } from "./AIVerdictBadge";
 import { GuestIdentityFields } from "./GuestIdentityFields";
+import { AuthorIdentity } from "./AuthorIdentity";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Comment, Profile } from "@/types/database";
 
 type CommentWithAuthor = Comment & {
-  profiles: Pick<Profile, "id" | "display_name" | "verified_badge"> | null;
+  profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null;
 };
 
 export function CommentSection({
@@ -157,10 +158,7 @@ function CommentRow({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-        <span className="font-medium text-neutral-700 dark:text-neutral-300">
-          {comment.profiles?.display_name ?? "Anonymous"}
-        </span>
-        {comment.profiles?.verified_badge && <span>✅</span>}
+        <AuthorIdentity profile={comment.profiles} />
         <span>·</span>
         <span>{new Date(comment.created_at).toLocaleDateString()}</span>
         {comment.is_best_answer && (
