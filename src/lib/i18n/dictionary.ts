@@ -278,6 +278,86 @@ export const dictionary = {
   submitVendor: { ne: "विक्रेता पेश गर्नुहोस्", en: "Submit vendor" },
   submittingVendor: { ne: "पेश गर्दै...", en: "Submitting..." },
   vendorSubmitted: { ne: "धन्यवाद! तपाईंको विक्रेता थपियो।", en: "Thanks! Your vendor listing has been added." },
+
+  // weather
+  navWeather: { ne: "मौसम", en: "Weather" },
+  weatherTitle: { ne: "मौसम पूर्वानुमान", en: "Weather Forecast" },
+  weatherSubtitle: {
+    ne: "जिल्ला सदरमुकामको अनुमानित मौसम — Open-Meteo बाट, हरेक गाउँका लागि सटीक होइन।",
+    en: "Approximate district-HQ forecast from Open-Meteo — not precise for every village.",
+  },
+  weatherSelectDistrict: { ne: "जिल्ला छान्नुहोस्", en: "Select district" },
+  weatherUnavailable: { ne: "मौसम जानकारी अहिले उपलब्ध छैन", en: "Weather data isn't available right now" },
+  weatherNoCoords: { ne: "यो जिल्लाको मौसम स्थान अझै थपिएको छैन", en: "Weather location not set for this district yet" },
+  frostWarning: { ne: "⚠️ यस हप्ता तुसारो पर्ने जोखिम छ", en: "Frost risk this week — protect sensitive crops" },
+  heavyRainWarning: { ne: "⚠️ यस हप्ता धेरै पानी पर्न सक्छ", en: "Heavy rain risk this week" },
+  today: { ne: "आज", en: "Today" },
+  humidity: { ne: "आर्द्रता", en: "Humidity" },
+  wind: { ne: "हावा", en: "Wind" },
+
+  // My Farm
+  myFarmTitle: { ne: "मेरो खेत", en: "My Farm" },
+  myFarmEmpty: { ne: "तपाईंको जिल्ला र बाली प्रोफाइलमा थप्नुहोस्", en: "Add your district and crops to your profile" },
+  editProfile: { ne: "प्रोफाइल सम्पादन गर्नुहोस्", en: "Edit profile" },
+  saveProfile: { ne: "सुरक्षित गर्नुहोस्", en: "Save" },
+  myFarmFilter: { ne: "मेरो खेत अनुसार", en: "My Farm" },
+  myFarmFeedLoading: { ne: "लोड हुँदैछ...", en: "Loading your farm profile..." },
+  bioLabel: { ne: "बारेमा", en: "Bio" },
+  cropsGrownLabel: { ne: "उब्जाउने बालीहरू", en: "Crops you grow" },
+
+  // best answer surfacing
+  topCommunityAnswer: { ne: "समुदायको उत्कृष्ट उत्तर", en: "Top community answer" },
+
+  // verification
+  verifyBadgeTitle: { ne: "प्रमाणित ब्याज आवेदन", en: "Apply for a verified badge" },
+  verifyBadgeSubtitle: {
+    ne: "कृषि प्रसार अधिकृत वा एग्रोभेट हुनुहुन्छ? प्रमाणित भएर समुदायलाई थप भरोसा दिनुहोस्।",
+    en: "Are you an extension officer or agrovet? Get verified so the community knows to trust your answers.",
+  },
+  whichBadge: { ne: "कुन ब्याज चाहानुहुन्छ?", en: "Which badge?" },
+  evidenceLabel: { ne: "प्रमाण (वैकल्पिक)", en: "Evidence (optional)" },
+  evidenceLinkLabel: { ne: "प्रमाण लिंक (वैकल्पिक)", en: "Evidence link (optional)" },
+  submitVerification: { ne: "आवेदन पेश गर्नुहोस्", en: "Submit application" },
+  verificationSubmitted: { ne: "धन्यवाद! एडमिनले समीक्षा गर्नेछन्।", en: "Thanks! An admin will review this." },
+  applyVerifiedBadge: { ne: "प्रमाणित ब्याजका लागि आवेदन दिनुहोस्", en: "Apply for a verified badge" },
+
+  // equipment/labor sharing + group buy
+  postTypeEquipmentShare: { ne: "औजार साझेदारी", en: "Equipment sharing" },
+  postTypeLaborShare: { ne: "श्रम साझेदारी", en: "Labor sharing" },
+  postTypeGroupBuy: { ne: "सामूहिक खरिद", en: "Group buy" },
+  joinGroupBuy: { ne: "यसमा सामेल हुनुहोस्", en: "I'm in" },
+  pledgeNotePlaceholder: { ne: "कति चाहियो, कहिले सम्पर्क गर्ने...", en: "How much you need, when to reach you..." },
+  pledgesTitle: { ne: "सामेल हुनेहरू", en: "Who's in" },
+  noPledgesYet: { ne: "अहिलेसम्म कोही सामेल भएको छैन", en: "No one has joined yet" },
+
+  // voice
+  voiceInputStart: { ne: "बोलेर लेख्नुहोस्", en: "Speak to type" },
+  voiceInputStop: { ne: "रोक्नुहोस्", en: "Stop" },
+  readAloud: { ne: "सुन्नुहोस्", en: "Read aloud" },
+
+  // changelog
+  changelogTitle: { ne: "के परिवर्तन भयो", en: "What's changed" },
+  changelogSubtitle: {
+    ne: "तपाईंको प्रतिक्रियाले प्लेटफर्म कसरी सुधार्यो",
+    en: "How your feedback has shaped this platform",
+  },
+  changelogEmpty: { ne: "अहिलेसम्म कुनै प्रविष्टि छैन", en: "Nothing logged yet" },
+
+  // photo diagnosis
+  diagnosePhotoButton: { ne: "AI ले फोटो जाँच्नुहोस्", en: "Get AI first-look on photo" },
+  diagnosingPhoto: { ne: "जाँच्दै...", en: "Analyzing..." },
+  diagnosisDisclaimer: {
+    ne: "AI को पहिलो अनुमान मात्र — पक्का निदान होइन। समुदायको जवाफ पर्खनुहोस्।",
+    en: "AI's first impression only — not a confirmed diagnosis. Still worth waiting for a community answer.",
+  },
+
+  // offline / PWA
+  offlineTitle: { ne: "इन्टरनेट जडान छैन", en: "You're offline" },
+  offlineBody: {
+    ne: "यो पृष्ठ अहिले उपलब्ध छैन। इन्टरनेट फर्किएपछि फेरि हेर्नुहोस् — अघि खोलेका पृष्ठहरू अझै काम गर्न सक्छन्।",
+    en: "This page isn't cached for offline use. Pages you've already visited may still work — try again once you're back online.",
+  },
+  offlineRetry: { ne: "फेरि प्रयास गर्नुहोस्", en: "Try again" },
 } as const;
 
 export type DictionaryKey = keyof typeof dictionary;

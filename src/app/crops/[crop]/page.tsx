@@ -1,5 +1,14 @@
 import { notFound } from "next/navigation";
-import { getCropBySlug, getCropZones, getZones, getPosts, getVendorsForCrop, getEquipmentForCrop, getDistricts } from "@/lib/data";
+import {
+  getCropBySlug,
+  getCropZones,
+  getZones,
+  getPosts,
+  getVendorsForCrop,
+  getEquipmentForCrop,
+  getDistricts,
+  getBestAnswersForCrop,
+} from "@/lib/data";
 import { CropDetailClient } from "@/components/CropDetailClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
 
@@ -8,13 +17,14 @@ export default async function CropDetailPage({ params }: { params: Promise<{ cro
   const crop = await getCropBySlug(slug);
   if (!crop) notFound();
 
-  const [cropZones, zones, posts, vendors, districts, equipmentLinks] = await Promise.all([
+  const [cropZones, zones, posts, vendors, districts, equipmentLinks, bestAnswers] = await Promise.all([
     getCropZones(crop.id),
     getZones(),
     getPosts({ cropId: crop.id }, "new", 50),
     getVendorsForCrop(crop.id),
     getDistricts(),
     getEquipmentForCrop(crop.id),
+    getBestAnswersForCrop(crop.id),
   ]);
 
   return (
@@ -28,6 +38,7 @@ export default async function CropDetailPage({ params }: { params: Promise<{ cro
         vendors={vendors}
         districts={districts}
         equipmentLinks={equipmentLinks}
+        bestAnswers={bestAnswers}
       />
     </div>
   );

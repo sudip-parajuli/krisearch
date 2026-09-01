@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, Bug, Sprout, CircleDollarSign, Trophy, MessageCircle, Wrench, type LucideIcon } from "lucide-react";
+import { HelpCircle, Bug, Sprout, CircleDollarSign, Trophy, MessageCircle, Wrench, Share2, HardHat, Users, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { PostType } from "@/types/database";
 import type { DictionaryKey } from "@/lib/i18n/dictionary";
@@ -13,6 +13,9 @@ const config: Record<PostType, { icon: LucideIcon; color: string; key: Dictionar
   success_story: { icon: Trophy, color: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300", key: "postTypeSuccess" },
   general_discussion: { icon: MessageCircle, color: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300", key: "postTypeGeneral" },
   equipment_review: { icon: Wrench, color: "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300", key: "postTypeEquipment" },
+  equipment_share: { icon: Share2, color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300", key: "postTypeEquipmentShare" },
+  labor_share: { icon: HardHat, color: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300", key: "postTypeLaborShare" },
+  group_buy: { icon: Users, color: "bg-gold-100 text-gold-800 dark:bg-gold-900 dark:text-gold-300", key: "postTypeGroupBuy" },
 };
 
 export function PostTypeBadge({ type }: { type: PostType }) {

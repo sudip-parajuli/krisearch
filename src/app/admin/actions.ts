@@ -32,10 +32,26 @@ export async function setVerifiedBadge(profileId: string, badge: VerifiedBadge) 
   revalidatePath("/admin");
 }
 
-export async function updateFeedbackStatus(feedbackId: string, status: FeedbackStatus) {
+export async function updateFeedbackStatus(feedbackId: string, status: FeedbackStatus, formData?: FormData) {
   await assertAdmin();
   const admin = createAdminClient();
   if (!admin) throw new Error("Admin client not configured (missing SUPABASE_SERVICE_ROLE_KEY).");
-  await admin.from("feedback").update({ status }).eq("id", feedbackId);
+  const note = formData?.get("note");
+  await admin
+    .from("feedback")
+    .update({ status, resolution_note: typeof note === "string" && note.trim() ? note.trim() : null })
+    .eq("id", feedbackId);
+  revalidatePath("/admin");
+  revalidatePath("/changelog");
+}
+
+export async function reviewVerificationRequest(requestId: string, profileId: string, badge: Exclude<VerifiedBadge, null>, approve: boolean) {
+  await assertAdmin();
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client not configured (missing SUPABASE_SERVICE_ROLE_KEY).");
+  await admin.from("verification_requests").update({ status: approve ? "approved" : "rejected" }).eq("id", requestId);
+  if (approve) {
+    await admin.from("profiles").update({ verified_badge: badge }).eq("id", profileId);
+  }
   revalidatePath("/admin");
 }

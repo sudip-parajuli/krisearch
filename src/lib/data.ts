@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { slugify } from "@/lib/slug";
+import { expandSearchTerms } from "@/lib/search-synonyms";
 import type {
   Zone,
   District,
@@ -20,6 +21,8 @@ import type {
   Profile,
   Report,
   Tag,
+  Feedback,
+  GroupBuyPledge,
 } from "@/types/database";
 
 /**
@@ -349,19 +352,24 @@ export async function searchAll(query: string): Promise<SearchResults> {
   const q = query.trim();
   if (!isSupabaseConfigured || !q) return empty;
   const supabase = await createClient();
-  const like = `%${q}%`;
+
+  // Expand "corn" -> also search "maize"/"makai"/"मकै", so English, romanized
+  // Nepali, and Devanagari spellings of the same crop all find each other.
+  // See search-synonyms.ts.
+  const terms = [q, ...expandSearchTerms(q)];
+  const orFields = (fields: string[]) => terms.flatMap((t) => fields.map((f) => `${f}.ilike.%${t}%`)).join(",");
 
   const [crops, equipment, vendors, schemes, posts] = await Promise.all([
-    supabase.from("crops").select("*").or(`name_en.ilike.${like},name_np.ilike.${like},baseline_notes.ilike.${like}`).limit(8),
-    supabase.from("equipment").select("*").or(`name.ilike.${like},name_np.ilike.${like},description.ilike.${like}`).limit(8),
-    supabase.from("vendors").select("*").or(`business_name.ilike.${like},contact_info.ilike.${like}`).limit(8),
-    supabase.from("schemes").select("*").or(`title.ilike.${like},description.ilike.${like}`).limit(6),
+    supabase.from("crops").select("*").or(orFields(["name_en", "name_np", "baseline_notes"])).limit(8),
+    supabase.from("equipment").select("*").or(orFields(["name", "name_np", "description"])).limit(8),
+    supabase.from("vendors").select("*").or(orFields(["business_name", "contact_info"])).limit(8),
+    supabase.from("schemes").select("*").or(orFields(["title", "description"])).limit(6),
     supabase
       .from("posts")
       .select(
         "*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
       )
-      .or(`title.ilike.${like},body.ilike.${like}`)
+      .or(orFields(["title", "body"]))
       .order("created_at", { ascending: false })
       .limit(6),
   ]);
@@ -373,4 +381,52 @@ export async function searchAll(query: string): Promise<SearchResults> {
     schemes: schemes.data ?? [],
     posts: ((posts.data ?? []) as unknown as PostRow[]).map((p) => ({ ...p, vote_score: 0, comment_count: 0 })),
   };
+}
+
+/** Publicly-readable resolved feedback with an admin note — the "what's changed" trust loop. */
+export async function getChangelog(): Promise<Feedback[]> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("feedback")
+    .select("*")
+    .eq("status", "reviewed")
+    .not("resolution_note", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  if (error) return [];
+  return data ?? [];
+}
+
+/** Best-answer comments on posts tagged with this crop — surfaced on the crop page itself. */
+export async function getBestAnswersForCrop(cropId: number): Promise<
+  (Comment & { posts: Pick<Post, "id" | "title"> | null })[]
+> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("comments")
+    .select("*, posts:post_id!inner(id, title, crop_id)")
+    .eq("is_best_answer", true)
+    .eq("posts.crop_id", cropId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (error) return [];
+  return (data ?? []) as (Comment & { posts: Pick<Post, "id" | "title"> | null })[];
+}
+
+export async function getPledgesForPost(postId: string): Promise<
+  (GroupBuyPledge & { profiles: Pick<Profile, "id" | "display_name" | "avatar_url" | "verification_method" | "verified_badge"> | null })[]
+> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("group_buy_pledges")
+    .select("*, profiles:user_id(id, display_name, avatar_url, verification_method, verified_badge)")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+  if (error) return [];
+  return (data ?? []) as (GroupBuyPledge & {
+    profiles: Pick<Profile, "id" | "display_name" | "avatar_url" | "verification_method" | "verified_badge"> | null;
+  })[];
 }

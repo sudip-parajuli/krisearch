@@ -5,18 +5,23 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ensureSession, applyGuestIdentity } from "@/lib/auth";
 import { GuestIdentityFields } from "./GuestIdentityFields";
+import { VoiceInputButton } from "./VoiceInputButton";
+import { HelpCircle, Bug, Sprout, CircleDollarSign, Trophy, MessageCircle, Wrench, Share2, HardHat, Users, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { DictionaryKey } from "@/lib/i18n/dictionary";
 import type { Crop, District, PostType, Tag } from "@/types/database";
 
-const postTypeOptions: { value: PostType; key: DictionaryKey; icon: string }[] = [
-  { value: "question", key: "postTypeQuestion", icon: "❓" },
-  { value: "disease_pest_report", key: "postTypeDisease", icon: "🐛" },
-  { value: "fertilizer_tip", key: "postTypeFertilizer", icon: "🌱" },
-  { value: "market_price_report", key: "postTypeMarket", icon: "💰" },
-  { value: "success_story", key: "postTypeSuccess", icon: "🏆" },
-  { value: "general_discussion", key: "postTypeGeneral", icon: "💬" },
-  { value: "equipment_review", key: "postTypeEquipment", icon: "🚜" },
+const postTypeOptions: { value: PostType; key: DictionaryKey; icon: LucideIcon }[] = [
+  { value: "question", key: "postTypeQuestion", icon: HelpCircle },
+  { value: "disease_pest_report", key: "postTypeDisease", icon: Bug },
+  { value: "fertilizer_tip", key: "postTypeFertilizer", icon: Sprout },
+  { value: "market_price_report", key: "postTypeMarket", icon: CircleDollarSign },
+  { value: "success_story", key: "postTypeSuccess", icon: Trophy },
+  { value: "general_discussion", key: "postTypeGeneral", icon: MessageCircle },
+  { value: "equipment_review", key: "postTypeEquipment", icon: Wrench },
+  { value: "equipment_share", key: "postTypeEquipmentShare", icon: Share2 },
+  { value: "labor_share", key: "postTypeLaborShare", icon: HardHat },
+  { value: "group_buy", key: "postTypeGroupBuy", icon: Users },
 ];
 
 export function NewPostForm({
@@ -37,6 +42,8 @@ export function NewPostForm({
   const [body, setBody] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [diagnosis, setDiagnosis] = useState<string | null>(null);
+  const [diagnosing, setDiagnosing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +76,24 @@ export function NewPostForm({
       setImages((prev) => [...prev, publicUrl.publicUrl]);
     }
     setUploading(false);
+  }
+
+  async function runDiagnosis() {
+    if (images.length === 0) return;
+    setDiagnosing(true);
+    setDiagnosis(null);
+    try {
+      const res = await fetch("/api/ai/diagnose-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: images[0], title, body }),
+      });
+      const data = await res.json();
+      setDiagnosis(data.diagnosis?.summary ?? null);
+    } catch {
+      setDiagnosis(null);
+    }
+    setDiagnosing(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -156,7 +181,7 @@ export function NewPostForm({
                   : "border-neutral-300 hover:border-neutral-400 dark:border-neutral-700"
               }`}
             >
-              <div className="text-lg">{opt.icon}</div>
+              <opt.icon className="mx-auto mb-0.5 h-5 w-5" strokeWidth={1.75} />
               {t(opt.key)}
             </button>
           ))}
@@ -207,7 +232,10 @@ export function NewPostForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium">{t("descriptionLabel")}</label>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="block text-sm font-medium">{t("descriptionLabel")}</label>
+          <VoiceInputButton onResult={(text) => setBody((prev) => (prev ? `${prev} ${text}` : text))} />
+        </div>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -227,6 +255,24 @@ export function NewPostForm({
               // eslint-disable-next-line @next/next/no-img-element
               <img key={url} src={url} alt="" className="h-16 w-16 rounded object-cover" />
             ))}
+          </div>
+        )}
+        {images.length > 0 && (
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={runDiagnosis}
+              disabled={diagnosing}
+              className="inline-flex items-center gap-1.5 rounded-full border border-green-300 bg-white px-3 py-1.5 text-xs font-semibold text-green-700 shadow-sm hover:bg-green-50 disabled:opacity-60 dark:border-green-800 dark:bg-neutral-900 dark:text-green-400"
+            >
+              {diagnosing ? t("diagnosingPhoto") : t("diagnosePhotoButton")}
+            </button>
+            {diagnosis && (
+              <div className="mt-2 rounded-lg bg-green-50 p-3 text-xs text-green-900 dark:bg-green-950 dark:text-green-200">
+                <p>{diagnosis}</p>
+                <p className="mt-1.5 text-green-700/70 dark:text-green-400/70">{t("diagnosisDisclaimer")}</p>
+              </div>
+            )}
           </div>
         )}
       </div>

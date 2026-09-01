@@ -65,20 +65,34 @@ async function main() {
   const zoneId = (name) => zones.find((z) => z.name === name)?.id;
 
   console.log("Districts...");
+  // Coordinates are the district HQ town (approximate) — general guidance
+  // for district-level weather, same honesty framing as everything else in
+  // this file, not precise for every village in a district.
   const districtRows = [
-    ["Jhapa", "Koshi", "Terai"], ["Morang", "Koshi", "Terai"], ["Sunsari", "Koshi", "Terai"],
-    ["Ilam", "Koshi", "Middle Hill"], ["Taplejung", "Koshi", "Mountain"],
-    ["Saptari", "Madhesh", "Terai"], ["Dhanusha", "Madhesh", "Terai"], ["Sarlahi", "Madhesh", "Terai"],
-    ["Kathmandu", "Bagmati", "Middle Hill"], ["Bhaktapur", "Bagmati", "Middle Hill"],
-    ["Kavrepalanchok", "Bagmati", "Middle Hill"], ["Sindhupalchok", "Bagmati", "High Hill"],
-    ["Rasuwa", "Bagmati", "Mountain"], ["Chitwan", "Bagmati", "Terai"],
-    ["Gorkha", "Gandaki", "High Hill"], ["Kaski", "Gandaki", "Middle Hill"],
-    ["Mustang", "Gandaki", "High Mountain"], ["Nawalparasi", "Gandaki", "Terai"],
-    ["Rupandehi", "Lumbini", "Terai"], ["Palpa", "Lumbini", "Middle Hill"], ["Dang", "Lumbini", "Siwalik"],
-    ["Salyan", "Karnali", "High Hill"], ["Jumla", "Karnali", "Mountain"], ["Surkhet", "Karnali", "Middle Hill"],
-    ["Kailali", "Sudurpashchim", "Terai"], ["Kanchanpur", "Sudurpashchim", "Terai"], ["Baitadi", "Sudurpashchim", "High Hill"],
-  ].map(([name, province, zone]) => ({ name, province, zone_id: zoneId(zone) }));
-  fail("districts", (await supabase.from("districts").upsert(districtRows, { onConflict: "name,province", ignoreDuplicates: true })).error);
+    ["Jhapa", "Koshi", "Terai", 26.5626, 87.9975], ["Morang", "Koshi", "Terai", 26.4525, 87.2718], ["Sunsari", "Koshi", "Terai", 26.6650, 87.2718],
+    ["Ilam", "Koshi", "Middle Hill", 26.9096, 87.9271], ["Taplejung", "Koshi", "Mountain", 27.3500, 87.6667],
+    ["Saptari", "Madhesh", "Terai", 26.5390, 86.7500], ["Dhanusha", "Madhesh", "Terai", 26.7288, 85.9266], ["Sarlahi", "Madhesh", "Terai", 26.8600, 85.5600],
+    ["Kathmandu", "Bagmati", "Middle Hill", 27.7172, 85.3240], ["Bhaktapur", "Bagmati", "Middle Hill", 27.6710, 85.4298],
+    ["Kavrepalanchok", "Bagmati", "Middle Hill", 27.6217, 85.5484], ["Sindhupalchok", "Bagmati", "High Hill", 27.8167, 85.6833],
+    ["Rasuwa", "Bagmati", "Mountain", 28.1167, 85.3167], ["Chitwan", "Bagmati", "Terai", 27.6244, 84.4278],
+    ["Gorkha", "Gandaki", "High Hill", 28.0000, 84.6333], ["Kaski", "Gandaki", "Middle Hill", 28.2096, 83.9856],
+    ["Mustang", "Gandaki", "High Mountain", 28.7833, 83.7167], ["Nawalparasi", "Gandaki", "Terai", 27.6167, 83.9667],
+    ["Rupandehi", "Lumbini", "Terai", 27.7000, 83.4486], ["Palpa", "Lumbini", "Middle Hill", 27.8667, 83.5500], ["Dang", "Lumbini", "Siwalik", 28.0500, 82.4833],
+    ["Salyan", "Karnali", "High Hill", 28.3833, 82.1667], ["Jumla", "Karnali", "Mountain", 29.2747, 82.1838], ["Surkhet", "Karnali", "Middle Hill", 28.6000, 81.6167],
+    ["Kailali", "Sudurpashchim", "Terai", 28.6833, 80.6000], ["Kanchanpur", "Sudurpashchim", "Terai", 28.9333, 80.1833], ["Baitadi", "Sudurpashchim", "High Hill", 29.5333, 80.4667],
+  ].map(([name, province, zone, latitude, longitude]) => ({ name, province, zone_id: zoneId(zone), latitude, longitude }));
+
+  const hasCoords = !(await supabase.from("districts").select("latitude").limit(1)).error;
+  if (!hasCoords) console.log("  (districts.latitude not found yet — apply migration 0009, then re-run this script)");
+  const districtPayload = hasCoords ? districtRows : districtRows.map(({ latitude: _lat, longitude: _lon, ...rest }) => rest);
+  fail(
+    "districts",
+    (
+      await supabase
+        .from("districts")
+        .upsert(districtPayload, { onConflict: "name,province" }) // full upsert (not ignoreDuplicates) so coordinates backfill onto already-seeded rows
+    ).error
+  );
 
   const { data: districts } = await supabase.from("districts").select("id, name");
   const districtId = (name) => districts.find((d) => d.name === name)?.id;
@@ -196,6 +210,24 @@ async function main() {
       eligibility: "Varies by municipality — typically residents/farmers registered within that local government's area.",
       how_to_apply: "Contact your Ward Office or municipality's agriculture branch directly, or ask at your local Krishi Gyan Kendra which local programs are currently open.",
       source_url: null,
+      last_verified: "2026-09-01",
+    },
+    {
+      title: "Agriculture, Livestock & Herb Insurance (govt.-subsidized premium)",
+      description: "Government-subsidized crop/livestock/herb insurance: 80% premium subsidy on coverage up to NPR 1 crore (10 million), 50% subsidy above that. Covers 27 crops (incl. paddy, potato, sugarcane, coffee, banana, tea, pulses, ginger, cardamom, timur, mango, and other fruits/vegetables) and 6 livestock/fisheries categories (poultry, pigs, fish, goats, cattle, fodder). Administered jointly by federal + provincial governments; insurance companies collect only the non-subsidized portion of the premium directly from farmers. The government has announced digitalization of the full insurance lifecycle (policy, premium, subsidy, claims) for FY 2026/27.",
+      subsidy_type: "insurance_premium_subsidy",
+      eligibility: "Farmers/farmer groups raising an eligible crop or livestock category; provincial governments oversee implementation, so specifics vary somewhat by province.",
+      how_to_apply: "Apply through a licensed insurance company offering the government-subsidized product (e.g. Nepal Insurance Company) or your provincial agriculture office; ask your local Krishi Gyan Kendra which insurer covers your district.",
+      source_url: "https://en.nepalinsurance.com/policy/agriculture-livestock-insurance",
+      last_verified: "2026-09-01",
+    },
+    {
+      title: "Sana Kisan Bikas Laghubitta (SKBBL) Agriculture Loan",
+      description: "SKBBL is a wholesale microfinance institution (est. 2001, HQ Babarmahal, Kathmandu) that channels low-cost credit through partner Small Farmer Agriculture Cooperatives Ltd. (SFACLs) and other cooperatives to reach small, marginalized, and women farmers who typically can't access mainstream bank credit directly. Reports reaching around 4.5 million people nationally through its cooperative network.",
+      subsidy_type: "microfinance_loan",
+      eligibility: "Farmers who are members (or can join) a partner SFACL/cooperative in their area — this is wholesale lending through cooperatives, not a walk-in bank loan.",
+      how_to_apply: "Find and join your nearest partner cooperative/SFACL, or contact SKBBL directly for their agriculture loan product.",
+      source_url: "https://www.skbbl.com.np/products/agriculture-loan",
       last_verified: "2026-09-01",
     },
   ];

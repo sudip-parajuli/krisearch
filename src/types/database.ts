@@ -15,6 +15,8 @@ export type District = {
   name: string;
   province: string;
   zone_id: number | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type CropCategory =
@@ -127,7 +129,10 @@ export type PostType =
   | "market_price_report"
   | "success_story"
   | "general_discussion"
-  | "equipment_review";
+  | "equipment_review"
+  | "equipment_share" // "my mini-tiller is free next Tuesday" — peer-to-peer, not a vendor listing
+  | "labor_share" // "need 2 people for rice transplanting this weekend"
+  | "group_buy"; // pooled/bulk-order coordination — see group_buy_pledges
 
 export type Post = {
   id: string;
@@ -229,6 +234,25 @@ export type Feedback = {
   message: string;
   page_url: string | null;
   status: "open" | "reviewed";
+  resolution_note: string | null;
+  created_at: string;
+};
+
+export type VerificationRequest = {
+  id: string;
+  profile_id: string | null;
+  requested_badge: Exclude<VerifiedBadge, null>;
+  evidence_text: string | null;
+  evidence_url: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+};
+
+export type GroupBuyPledge = {
+  id: string;
+  post_id: string;
+  user_id: string;
+  note: string | null;
   created_at: string;
 };
 

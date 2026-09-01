@@ -19,35 +19,40 @@ insert into zones (name, altitude_min, altitude_max, description) values
 on conflict (name) do nothing;
 
 -- ============ DISTRICTS (representative subset, not exhaustive) ============
-insert into districts (name, province, zone_id) values
-  ('Jhapa', 'Koshi', 1),
-  ('Morang', 'Koshi', 1),
-  ('Sunsari', 'Koshi', 1),
-  ('Ilam', 'Koshi', 3),
-  ('Taplejung', 'Koshi', 5),
-  ('Saptari', 'Madhesh', 1),
-  ('Dhanusha', 'Madhesh', 1),
-  ('Sarlahi', 'Madhesh', 1),
-  ('Kathmandu', 'Bagmati', 3),
-  ('Bhaktapur', 'Bagmati', 3),
-  ('Kavrepalanchok', 'Bagmati', 3),
-  ('Sindhupalchok', 'Bagmati', 4),
-  ('Rasuwa', 'Bagmati', 5),
-  ('Chitwan', 'Bagmati', 1),
-  ('Gorkha', 'Gandaki', 4),
-  ('Kaski', 'Gandaki', 3),
-  ('Mustang', 'Gandaki', 6),
-  ('Nawalparasi', 'Gandaki', 1),
-  ('Rupandehi', 'Lumbini', 1),
-  ('Palpa', 'Lumbini', 3),
-  ('Dang', 'Lumbini', 2),
-  ('Salyan', 'Karnali', 4),
-  ('Jumla', 'Karnali', 5),
-  ('Surkhet', 'Karnali', 3),
-  ('Kailali', 'Sudurpashchim', 1),
-  ('Kanchanpur', 'Sudurpashchim', 1),
-  ('Baitadi', 'Sudurpashchim', 4)
-on conflict (name, province) do nothing;
+-- Coordinates are the district HQ town (approximate, for the weather
+-- feature) — general guidance, not precise for every village in a district.
+-- Requires migration 0009 (districts.latitude/longitude); do update so
+-- re-running this file backfills coordinates onto rows seeded before 0009.
+insert into districts (name, province, zone_id, latitude, longitude) values
+  ('Jhapa', 'Koshi', 1, 26.5626, 87.9975),
+  ('Morang', 'Koshi', 1, 26.4525, 87.2718),
+  ('Sunsari', 'Koshi', 1, 26.6650, 87.2718),
+  ('Ilam', 'Koshi', 3, 26.9096, 87.9271),
+  ('Taplejung', 'Koshi', 5, 27.3500, 87.6667),
+  ('Saptari', 'Madhesh', 1, 26.5390, 86.7500),
+  ('Dhanusha', 'Madhesh', 1, 26.7288, 85.9266),
+  ('Sarlahi', 'Madhesh', 1, 26.8600, 85.5600),
+  ('Kathmandu', 'Bagmati', 3, 27.7172, 85.3240),
+  ('Bhaktapur', 'Bagmati', 3, 27.6710, 85.4298),
+  ('Kavrepalanchok', 'Bagmati', 3, 27.6217, 85.5484),
+  ('Sindhupalchok', 'Bagmati', 4, 27.8167, 85.6833),
+  ('Rasuwa', 'Bagmati', 5, 28.1167, 85.3167),
+  ('Chitwan', 'Bagmati', 1, 27.6244, 84.4278),
+  ('Gorkha', 'Gandaki', 4, 28.0000, 84.6333),
+  ('Kaski', 'Gandaki', 3, 28.2096, 83.9856),
+  ('Mustang', 'Gandaki', 6, 28.7833, 83.7167),
+  ('Nawalparasi', 'Gandaki', 1, 27.6167, 83.9667),
+  ('Rupandehi', 'Lumbini', 1, 27.7000, 83.4486),
+  ('Palpa', 'Lumbini', 3, 27.8667, 83.5500),
+  ('Dang', 'Lumbini', 2, 28.0500, 82.4833),
+  ('Salyan', 'Karnali', 4, 28.3833, 82.1667),
+  ('Jumla', 'Karnali', 5, 29.2747, 82.1838),
+  ('Surkhet', 'Karnali', 3, 28.6000, 81.6167),
+  ('Kailali', 'Sudurpashchim', 1, 28.6833, 80.6000),
+  ('Kanchanpur', 'Sudurpashchim', 1, 28.9333, 80.1833),
+  ('Baitadi', 'Sudurpashchim', 4, 29.5333, 80.4667)
+on conflict (name, province) do update set
+  zone_id = excluded.zone_id, latitude = excluded.latitude, longitude = excluded.longitude;
 
 -- ============ CROPS ============
 insert into crops (name_en, name_np, category, baseline_notes) values
@@ -160,6 +165,24 @@ insert into schemes (title, description, subsidy_type, eligibility, how_to_apply
     'Varies by municipality — typically residents/farmers registered within that local government''s area.',
     'Contact your Ward Office or municipality''s agriculture branch directly, or ask at your local Krishi Gyan Kendra which local programs are currently open.',
     null,
+    '2026-09-01'
+  ),
+  (
+    'Agriculture, Livestock & Herb Insurance (govt.-subsidized premium)',
+    'Government-subsidized crop/livestock/herb insurance: 80% premium subsidy on coverage up to NPR 1 crore (10 million), 50% subsidy above that. Covers 27 crops (incl. paddy, potato, sugarcane, coffee, banana, tea, pulses, ginger, cardamom, timur, mango, and other fruits/vegetables) and 6 livestock/fisheries categories (poultry, pigs, fish, goats, cattle, fodder). Administered jointly by federal + provincial governments; insurance companies collect only the non-subsidized portion of the premium directly from farmers. The government has announced digitalization of the full insurance lifecycle (policy, premium, subsidy, claims) for FY 2026/27.',
+    'insurance_premium_subsidy',
+    'Farmers/farmer groups raising an eligible crop or livestock category; provincial governments oversee implementation, so specifics vary somewhat by province.',
+    'Apply through a licensed insurance company offering the government-subsidized product (e.g. Nepal Insurance Company) or your provincial agriculture office; ask your local Krishi Gyan Kendra which insurer covers your district.',
+    'https://en.nepalinsurance.com/policy/agriculture-livestock-insurance',
+    '2026-09-01'
+  ),
+  (
+    'Sana Kisan Bikas Laghubitta (SKBBL) Agriculture Loan',
+    'SKBBL is a wholesale microfinance institution (est. 2001, HQ Babarmahal, Kathmandu) that channels low-cost credit through partner Small Farmer Agriculture Cooperatives Ltd. (SFACLs) and other cooperatives to reach small, marginalized, and women farmers who typically can''t access mainstream bank credit directly. Reports reaching around 4.5 million people nationally through its cooperative network.',
+    'microfinance_loan',
+    'Farmers who are members (or can join) a partner SFACL/cooperative in their area — this is wholesale lending through cooperatives, not a walk-in bank loan.',
+    'Find and join your nearest partner cooperative/SFACL, or contact SKBBL directly for their agriculture loan product.',
+    'https://www.skbbl.com.np/products/agriculture-loan',
     '2026-09-01'
   )
 on conflict (title) do update set

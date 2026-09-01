@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, MapPin, Store } from "lucide-react";
+import { BookOpen, MapPin, Store, Award } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PostCard } from "./PostCard";
 import { ToolCard } from "./ToolCard";
 import { EmptyState } from "./EmptyState";
 import type { PostRow } from "@/lib/data";
-import type { Crop, CropZone, Zone, Vendor, Equipment, District } from "@/types/database";
+import type { Crop, CropZone, Zone, Vendor, Equipment, District, Comment, Post } from "@/types/database";
 
 export function CropDetailClient({
   crop,
@@ -17,6 +17,7 @@ export function CropDetailClient({
   vendors,
   districts,
   equipmentLinks,
+  bestAnswers,
 }: {
   crop: Crop;
   cropZones: CropZone[];
@@ -25,6 +26,7 @@ export function CropDetailClient({
   vendors: Vendor[];
   districts: District[];
   equipmentLinks: { equipment: Equipment | null; notes: string | null }[];
+  bestAnswers: (Comment & { posts: Pick<Post, "id" | "title"> | null })[];
 }) {
   const { t } = useLanguage();
   const zoneById = new Map(zones.map((z) => [z.id, z]));
@@ -70,6 +72,26 @@ export function CropDetailClient({
           </div>
         )}
       </div>
+
+      {bestAnswers.length > 0 && (
+        <div>
+          <h2 className="mb-3 flex items-center gap-1.5 text-lg font-semibold">
+            <Award className="h-5 w-5 text-gold-600 dark:text-gold-400" /> {t("topCommunityAnswer")}
+          </h2>
+          <div className="flex flex-col gap-2">
+            {bestAnswers.map((c) => (
+              <Link
+                key={c.id}
+                href={`/post/${c.posts?.id}`}
+                className="block rounded-2xl border border-gold-200 bg-gold-50 p-3 text-sm shadow-sm transition-shadow hover:shadow-md dark:border-gold-800/40 dark:bg-gold-900/20"
+              >
+                {c.posts?.title && <p className="text-xs font-medium text-gold-700 dark:text-gold-400">{c.posts.title}</p>}
+                <p className="mt-1 text-neutral-700 dark:text-neutral-300">{c.body}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {equipmentLinks.length > 0 && (
         <div>

@@ -8,6 +8,7 @@ import { ReportButton } from "./ReportButton";
 import { AIVerdictBadge } from "./AIVerdictBadge";
 import { GuestIdentityFields } from "./GuestIdentityFields";
 import { AuthorIdentity } from "./AuthorIdentity";
+import { VoiceInputButton } from "./VoiceInputButton";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Comment, Profile } from "@/types/database";
 
@@ -100,6 +101,7 @@ export function CommentSection({
             {t("send")}
           </button>
         </div>
+        <VoiceInputButton onResult={(text) => setBody((prev) => (prev ? `${prev} ${text}` : text))} />
         {!viewerId && (
           <button
             type="button"

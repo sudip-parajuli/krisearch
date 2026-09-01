@@ -19,6 +19,7 @@ const mobileTabs = [
 const desktopLinks = [
   { href: "/feed", key: "navFeed" as const },
   { href: "/tools", key: "navTools" as const },
+  { href: "/weather", key: "navWeather" as const },
   { href: "/schemes", key: "navSchemes" as const },
   { href: "/prices", key: "navPrices" as const },
   { href: "/vendors", key: "navVendors" as const },

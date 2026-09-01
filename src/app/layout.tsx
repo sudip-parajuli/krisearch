@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Devanagari, Fraunces } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,13 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Krisearch — कृषिSearch",
   description: "A community-driven agriculture platform for Nepali farmers.",
+  appleWebApp: { title: "Krisearch", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2f6e4e",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -47,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Krisearch — कृषि + Search. Built for Nepali farmers.
           </footer>
           <FeedbackWidget />
+          <ServiceWorkerRegister />
         </LanguageProvider>
       </body>
     </html>

@@ -70,10 +70,17 @@ run the files in [supabase/migrations/](supabase/migrations/) **in order**:
    Before this, the table only had a public-read policy — nobody, not even
    a logged-in user, could actually add a vendor. Powers `/vendors/new`
    (see "Vendor self-submission" below).
+9. `0009_growth_features.sql` — `districts.latitude`/`longitude` (powers
+   `/weather`), the `verification_requests` table (powers
+   `/profile/verify` + the admin review queue), the `group_buy_pledges`
+   table (powers the "I'm in" flow on `group_buy` posts), and
+   `feedback.resolution_note` (powers the public `/changelog`).
 
 Until `0007` runs, `scripts/apply-seed.mjs` reports (and skips, without
 failing anything else) the two pieces that need it — re-run it after
-applying `0007` to fill them in.
+applying `0007` to fill them in. Likewise, until `0009` runs, district
+coordinates are skipped (weather won't have a location to look up) — re-run
+the seed script after applying `0009` to backfill them.
 
 Then load [supabase/seed.sql](supabase/seed.sql) — safe to re-run any time
 now that `0005`–`0007` give it real upsert targets, and it now includes a
@@ -241,10 +248,14 @@ scripts/
 | `/schemes` | Government scheme directory, "last verified" surfaced prominently |
 | `/prices` | Aggregated market prices with a simple trend indicator |
 | `/vendors`, `/vendors/new` | Crop buyers + equipment suppliers/rental/service providers, with self-submission — anyone (including a guest) can list themselves or a vendor they know |
-| `/search` | Unified search across crops, tools, vendors, schemes, and posts — plus an on-demand AI-generated overview (climate/process/care/selling) for a matched crop |
+| `/search` | Unified search across crops, tools, vendors, schemes, and posts — synonym-aware (see below) — plus an on-demand AI-generated overview (climate/process/care/selling) for a matched crop |
+| `/weather` | 7-day forecast per district (Open-Meteo, free/no-key) with frost- and heavy-rain-risk warnings |
 | `/profile/[id]` | District, crops grown, post history, verified badge |
+| `/profile/edit` | Edit your own display name, district, crops grown, bio — powers the feed's "My Farm" filter |
+| `/profile/verify` | Self-apply for a verified badge (extension officer / agrovet) with evidence, reviewed in `/admin` |
+| `/changelog` | Public timeline of platform changes, sourced from admin-resolved feedback |
 | `/login` | Phone / email / Google / Facebook — plus silent guest-to-verified upgrade |
-| `/admin` | Price sync trigger, feedback inbox, report moderation, verified-badge management (restricted via `ADMIN_USER_IDS`) |
+| `/admin` | Price sync trigger, feedback inbox (with resolution notes that publish to `/changelog`), report moderation, verified-badge management, verification-request review (restricted via `ADMIN_USER_IDS`) |
 
 A floating **💬 Feedback** button (bottom-left, every page) accepts a
 message with optional name/contact from literally anyone — no session, no
@@ -435,3 +446,97 @@ account, not even the silent guest sign-in.
   environment (no headless-browser screenshot tool was available here) —
   worth a quick look at `npm run dev` yourself to confirm it reads the way
   you want.
+
+## Growth features (free-tier only)
+
+Everything below was built with **no paid service and no external
+business-account verification** — the constraint the whole batch was scoped
+to. Two brainstormed items were explicitly **deferred** because they need
+either paid infra or an external business verification process this
+environment can't complete: **Web Push notifications** (needs a paid/queued
+push backend at any real scale) and a **WhatsApp Business bridge** (needs a
+verified Meta Business account). Everything else:
+
+- **Weather** (`/weather`, [lib/weather.ts](src/lib/weather.ts)):
+  [Open-Meteo](https://open-meteo.com) — genuinely free, no API key, no
+  account. 7-day forecast per district plus frost-risk (any day's forecast
+  low ≤2°C) and heavy-rain-risk (any day's forecast precipitation ≥30mm)
+  warning banners. District coordinates are the district HQ town
+  (approximate) — same "general guidance, not hyper-local" honesty framing
+  as the rest of the facts layer.
+- **My Farm** (`/profile/edit` + a feed toggle in
+  [FeedClient.tsx](src/components/FeedClient.tsx)): set your district and
+  crops grown once, then filter the main feed to posts matching either.
+- **Best community answer surfacing**: `/crops/[crop]` now pulls the
+  best-marked comment from any post tagged to that crop
+  (`getBestAnswersForCrop()`) and shows it above the tools section — so a
+  crop page isn't just static facts, it also leads with the community's own
+  best answer for that crop.
+- **Real insurance + microfinance scheme data**: added the
+  government-subsidized Agriculture/Livestock/Herb Insurance scheme (80%/50%
+  premium subsidy tiers) and SKBBL's cooperative-channeled agriculture loan
+  product to `schemes` — both real, sourced (see `seed.sql`), addressing the
+  "how do I actually finance/de-risk this" gap the facts layer had.
+- **Verified-badge self-application** (`/profile/verify`): anyone can apply
+  for an "extension officer" or "agrovet" badge with evidence text/a
+  supporting link; an admin approves or rejects from `/admin`
+  (`verification_requests` table, migration `0009`). No external identity
+  API — this is a lightweight peer/admin-reviewed claim, framed as such in
+  the UI, not a hard identity guarantee.
+- **Voice input + read-aloud**: the Web Speech API, free and entirely
+  client-side. [VoiceInputButton.tsx](src/components/VoiceInputButton.tsx)
+  (mic → text, wired into the post and comment composers) and
+  [ReadAloudButton.tsx](src/components/ReadAloudButton.tsx) (text → speech,
+  on post detail) both feature-detect and simply don't render when the
+  browser doesn't support them (support varies; strongest on Android
+  Chrome, a realistic primary browser for many farmers here) — this is a
+  progressive enhancement, never something else depends on it.
+- **Offline / PWA support**: a hand-rolled service worker
+  ([public/sw.js](public/sw.js)) — no Workbox/`next-pwa`, to avoid any
+  Turbopack build-plugin compatibility risk. Pages: network-first, cached
+  copy as fallback, `/offline` as the last resort. Next.js build assets and
+  generated icons: cache-first (content-hashed, safe to). Every cross-origin
+  request (Supabase, OpenRouter, the weather API) is left completely
+  untouched — the worker never intercepts an API call, so it can never serve
+  stale prices/posts/auth state as if it were live. `app/manifest.ts` +
+  generated icons (`app/icons/192`, `app/icons/512`, `app/apple-icon.tsx`,
+  all rendered via `next/og`'s `ImageResponse` rather than a checked-in
+  binary asset) make it installable. Registered only in production
+  ([ServiceWorkerRegister.tsx](src/components/ServiceWorkerRegister.tsx)) so
+  it never caches dev's fast-refreshing assets.
+- **AI photo-based pest/disease first-look** (in `/post/new`, after an image
+  upload): sends the photo to OpenRouter's one confirmed-free vision-capable
+  model (`minimax/minimax-m3:free`) for a brief, explicitly non-definitive
+  first impression — [lib/ai/photo-diagnosis.ts](src/lib/ai/photo-diagnosis.ts)'s
+  system prompt requires it to say when a photo is unclear and never present
+  itself as a diagnosis, same honesty framing as the AI safety-signal
+  classifier. On-demand (button click), not automatic, to keep OpenRouter
+  usage bounded.
+- **Equipment/labor sharing + group buying**: three new post types —
+  `equipment_share`, `labor_share`, `group_buy` — reuse the existing post
+  pipeline (guest-friendly, AI safety check, comments) rather than a
+  separate system. `group_buy` posts additionally show a pledge list and an
+  "I'm in" button ([GroupBuyPledges.tsx](src/components/GroupBuyPledges.tsx),
+  `group_buy_pledges` table, migration `0009`).
+- **Public changelog** (`/changelog`): admin marks a feedback item
+  "reviewed" with a resolution note in `/admin`; anything with a note
+  becomes a public timeline entry (`getChangelog()`) — feedback → visible
+  outcome, in the open, instead of disappearing into an internal-only inbox.
+
+### Search understands synonyms, romanized Nepali, and Devanagari
+
+Searching **"corn"** used to return nothing, even though the platform lists
+it as **"Maize"** — ILIKE only does substring matching, so two different
+spellings of the same crop never matched each other. The same problem
+applied to romanized Nepali: a farmer searching **"makai"** or **"kera"**
+(rather than "maize"/"मकै" or "banana"/"केरा") got no results either.
+
+[lib/search-synonyms.ts](src/lib/search-synonyms.ts) fixes this with a
+query-expansion table — a few dozen groups of interchangeable terms (English
+common name, romanized Nepali, Devanagari) covering the crops, livestock,
+and products currently in the platform. `searchAll()` in
+[lib/data.ts](src/lib/data.ts) expands the query against this table before
+building its `ilike` filters, so "corn", "makai", "maize", and "मकै" all
+resolve to the same result. It's a hand-maintained list, not a translation
+API (no free option covers agricultural/romanized-Nepali slang well) — add a
+new group to `SYNONYM_GROUPS` whenever a gap like this turns up again.
