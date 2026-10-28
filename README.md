@@ -17,6 +17,11 @@ software and AI to practical agricultural problems in Nepal.
 - Guest participation, account sign-in and administrator moderation tools.
 - Optional AI-assisted text review, search overviews and photo first-look features.
 - Progressive web app, offline fallback and browser-dependent voice tools.
+- Light, dark and system themes with a remembered browser preference.
+- Searchable `/crops` directory with bilingual/romanized aliases and category filters.
+- Saved crop and post links at `/saved`, stored in this browser without sign-in.
+- Task-based homepage shortcuts and a complete mobile section menu.
+- Market-date freshness labels and comparisons separated by price unit.
 
 Reference information, community posts and AI-generated text serve different
 purposes. AI output is an assistive signal and is not independently verified
@@ -37,6 +42,8 @@ create a development Supabase project, configure environment variables, apply
 the migrations in `supabase/migrations/` in order and load appropriate reference
 data. The [detailed guide](docs/SETUP_AND_IMPLEMENTATION.md) lists the variables,
 auth providers, migrations, seeds, admin setup and optional AI configuration.
+Copy the committed `.env.local.example` to `.env.local` for a local configuration
+template. Keep server-only credentials out of `NEXT_PUBLIC_*` variables.
 
 ## Repository map
 
@@ -53,14 +60,22 @@ auth providers, migrations, seeds, admin setup and optional AI configuration.
 
 ```sh
 npm run lint
+npm test
 npm run build
 ```
 
-The repository does not yet include an automated regression suite. Database
-permissions need dedicated tests: public profile reads must not expose private
-contact fields, and best-answer selection should not permit editing another
-person's comment. AI endpoints and public submissions also need abuse and quota
-testing. These are implementation follow-ups, not fixes made by this README.
+`npm test` covers saved-resource validation, crop aliases, search filter input,
+market unit grouping and freshness/date handling. It runs without database
+credentials. These focused checks do not replace database-policy or browser tests.
+
+Saved resources are links stored locally, capped at 200; they do not sync across
+devices or download full offline articles. The service worker caches immutable
+build assets and a generic offline page, not account HTML, RSC payloads, APIs or
+market data. Old Krisearch caches are retired when the worker updates.
+
+Remaining backend and product work is tracked in [the improvement roadmap](docs/IMPROVEMENT_ROADMAP.md),
+including private profile access, best-answer permissions and AI abuse controls.
+No production database migrations were applied as part of this UI update.
 
 Future evaluation should include retrieval quality, citation accuracy, bilingual
 usability and feedback from agricultural users and domain reviewers.

@@ -6,6 +6,8 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PostCard } from "./PostCard";
 import { ToolCard } from "./ToolCard";
 import { EmptyState } from "./EmptyState";
+import { SaveButton } from "./SaveButton";
+import { slugify } from "@/lib/slug";
 import type { PostRow } from "@/lib/data";
 import type { Crop, CropZone, Zone, Vendor, Equipment, District, Comment, Post } from "@/types/database";
 
@@ -39,6 +41,7 @@ export function CropDetailClient({
           {crop.name_en}
           {crop.name_np && <span className="ml-2 text-lg text-neutral-400">{crop.name_np}</span>}
         </h1>
+        <div className="mt-3"><SaveButton href={`/crops/${slugify(crop.name_en)}`} title={crop.name_np ? `${crop.name_en} · ${crop.name_np}` : crop.name_en} kind="crop" /></div>
         {crop.category && (
           <span className="mt-1 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium capitalize text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
             {crop.category.replace("_", " ")}

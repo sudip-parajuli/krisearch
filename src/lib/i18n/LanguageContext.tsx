@@ -40,6 +40,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+
   const value = useMemo<LanguageContextValue>(
     () => ({
       lang,

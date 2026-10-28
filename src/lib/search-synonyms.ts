@@ -63,3 +63,8 @@ export function expandSearchTerms(query: string): string[] {
   if (!group) return [];
   return group.filter((term) => term !== q);
 }
+
+/** Keep user text out of PostgREST's filter grammar and bound query work. */
+export function normalizeSearchQuery(query: string): string {
+  return query.slice(0, 200).replace(/[,%.()_"\\]/g, " ").replace(/\s+/g, " ").trim();
+}

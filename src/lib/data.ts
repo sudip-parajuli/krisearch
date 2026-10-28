@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { slugify } from "@/lib/slug";
-import { expandSearchTerms } from "@/lib/search-synonyms";
+import { expandSearchTerms, normalizeSearchQuery } from "@/lib/search-synonyms";
 import type {
   Zone,
   District,
@@ -349,7 +349,7 @@ export type SearchResults = {
 /** Simple ilike search across the facts layer + posts — one query per table, run in parallel. */
 export async function searchAll(query: string): Promise<SearchResults> {
   const empty: SearchResults = { crops: [], equipment: [], vendors: [], schemes: [], posts: [] };
-  const q = query.trim();
+  const q = normalizeSearchQuery(query);
   if (!isSupabaseConfigured || !q) return empty;
   const supabase = await createClient();
 

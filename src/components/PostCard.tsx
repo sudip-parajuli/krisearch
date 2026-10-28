@@ -4,6 +4,7 @@ import { PostTypeBadge } from "./PostTypeBadge";
 import { VoteButtons } from "./VoteButtons";
 import { AIVerdictBadge } from "./AIVerdictBadge";
 import { AuthorIdentity } from "./AuthorIdentity";
+import { SaveButton } from "./SaveButton";
 import { slugify } from "@/lib/slug";
 import type { PostRow } from "@/lib/data";
 
@@ -43,6 +44,7 @@ export function PostCard({ post }: { post: PostRow }) {
         </Link>
 
         <div className="mt-2.5 flex items-center gap-3 text-xs">
+          <SaveButton href={`/post/${post.id}`} title={post.title} kind="post" />
           <Link
             href={`/post/${post.id}`}
             className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 font-medium text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"

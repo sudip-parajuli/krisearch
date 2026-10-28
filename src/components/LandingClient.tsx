@@ -21,6 +21,7 @@ import { PostCard } from "./PostCard";
 import { EmptyState } from "./EmptyState";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { CollapsibleSection } from "./CollapsibleSection";
+import { FarmShortcuts } from "./FarmShortcuts";
 import type { PostRow } from "@/lib/data";
 import type { PlatformStats } from "@/lib/data";
 
@@ -54,7 +55,7 @@ export function LandingClient({ recentPosts, stats }: { recentPosts: PostRow[]; 
   ];
 
   const exploreLinks: { href: string; icon: LucideIcon; label: string }[] = [
-    { href: "/crops/rice", icon: Wheat, label: t("navCrops") },
+    { href: "/crops", icon: Wheat, label: t("navCrops") },
     { href: "/tools", icon: Tractor, label: t("navTools") },
     { href: "/schemes", icon: ScrollText, label: t("navSchemes") },
     { href: "/vendors", icon: Store, label: t("navVendors") },
@@ -64,10 +65,10 @@ export function LandingClient({ recentPosts, stats }: { recentPosts: PostRow[]; 
     <div className="flex flex-col gap-8">
       {/* Hero — brand + primary CTAs, kept brief so live content follows fast */}
       <motion.section
-        initial={{ opacity: 0, y: 16 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-700 via-green-800 to-green-950 px-6 py-12 text-center text-white shadow-xl sm:py-16"
+        className="farm-hero relative overflow-hidden rounded-3xl px-6 py-12 text-center text-white shadow-xl sm:py-16"
       >
         <div
           aria-hidden
@@ -115,6 +116,8 @@ export function LandingClient({ recentPosts, stats }: { recentPosts: PostRow[]; 
           </div>
         </div>
       </motion.section>
+
+      <FarmShortcuts />
 
       {/* Live stats — proof the platform is active, right up front */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">

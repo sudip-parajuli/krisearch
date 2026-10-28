@@ -1,4 +1,6 @@
+"use client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 /**
  * Renders nothing once a real Supabase project is connected. Until then it
@@ -6,13 +8,12 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
  * not proof the feature is broken.
  */
 export function SupabaseSetupNotice() {
+  const { lang } = useLanguage();
   if (isSupabaseConfigured) return null;
 
   return (
     <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-      <strong>Supabase isn&apos;t connected yet.</strong> Add your project credentials to{" "}
-      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">.env.local</code> (see{" "}
-      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900">.env.local.example</code>) to see live data here.
+      {lang === "ne" ? "केही जानकारी अहिले उपलब्ध छैन। केही समयपछि फेरि प्रयास गर्नुहोस्।" : "Some information is unavailable right now. Please try again later."}
     </div>
   );
 }

@@ -69,11 +69,14 @@ export function SearchClient({ initialQuery, results }: { initialQuery: string; 
         <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
         <input
           value={q}
+          aria-label={t("navSearch")}
+          maxLength={200}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("searchPlaceholder")}
           autoFocus
-          className="w-full rounded-full border border-neutral-200 bg-white py-3 pl-12 pr-4 text-base shadow-sm outline-none transition-colors focus:border-green-400 dark:border-neutral-800 dark:bg-neutral-900"
+          className="w-full rounded-full border border-neutral-200 bg-white py-3 pl-12 pr-24 text-base shadow-sm outline-none transition-colors focus:border-green-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
+        <button type="submit" className="absolute right-1.5 top-1.5 rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white">{t("navSearch")}</button>
       </form>
 
       {!initialQuery && <EmptyState icon={SearchIcon} title={t("searchEmptyPrompt")} />}

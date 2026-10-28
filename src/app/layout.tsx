@@ -5,6 +5,8 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { SavedProvider } from "@/components/SavedProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,17 +47,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ne"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable} ${fraunces.variable} h-full antialiased`}
     >
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('krisearch-theme');var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}})()` }} /></head>
       <body className="flex min-h-full flex-col bg-[color:var(--background)] text-[color:var(--foreground)]">
         <LanguageProvider>
+          <ThemeProvider>
+          <SavedProvider>
+          <a href="#main-content" className="skip-link">मुख्य सामग्री / Skip to content</a>
           <Navbar />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">{children}</main>
+          <main id="main-content" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 md:pb-8">{children}</main>
           <footer className="border-t border-neutral-200 py-6 text-center text-xs text-neutral-400 dark:border-neutral-800">
             Krisearch — कृषि + Search. Built for Nepali farmers.
           </footer>
           <FeedbackWidget />
           <ServiceWorkerRegister />
+          </SavedProvider>
+          </ThemeProvider>
         </LanguageProvider>
       </body>
     </html>

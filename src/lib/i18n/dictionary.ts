@@ -3,8 +3,8 @@ export type Lang = "ne" | "en";
 export const dictionary = {
   appName: { ne: "कृषिSearch", en: "Krisearch" },
   tagline: {
-    ne: "किसानले किसानका लागि बनाएको खेती समुदाय",
-    en: "The farming community built by farmers, for farmers",
+    ne: "खेतीका लागि उपयोगी जानकारी र साथ दिने समुदाय",
+    en: "Practical knowledge. A stronger farming community.",
   },
 
   // nav
@@ -354,8 +354,8 @@ export const dictionary = {
   // offline / PWA
   offlineTitle: { ne: "इन्टरनेट जडान छैन", en: "You're offline" },
   offlineBody: {
-    ne: "यो पृष्ठ अहिले उपलब्ध छैन। इन्टरनेट फर्किएपछि फेरि हेर्नुहोस् — अघि खोलेका पृष्ठहरू अझै काम गर्न सक्छन्।",
-    en: "This page isn't cached for offline use. Pages you've already visited may still work — try again once you're back online.",
+    ne: "यो पृष्ठ खोल्न इन्टरनेट चाहिन्छ। तपाईंको गोपनीयता र ताजा जानकारीका लागि खाता, पोस्ट र बजार मूल्यका पृष्ठहरू अफलाइन भण्डारण गरिँदैनन्। जडान फर्किएपछि फेरि प्रयास गर्नुहोस्।",
+    en: "An internet connection is needed. To protect privacy and freshness, account pages, posts and market data are not stored offline. Try again when your connection returns.",
   },
   offlineRetry: { ne: "फेरि प्रयास गर्नुहोस्", en: "Try again" },
 } as const;

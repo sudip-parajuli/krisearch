@@ -12,6 +12,7 @@ export function PriceCropSelect({ crops }: { crops: Crop[] }) {
 
   return (
     <select
+      aria-label={t("allCrops")}
       value={searchParams.get("crop") ?? ""}
       onChange={(e) => {
         const params = new URLSearchParams(searchParams.toString());
