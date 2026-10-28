@@ -1,6 +1,7 @@
 import "server-only";
 import * as cheerio from "cheerio";
 import { parsePriceCell, normalizeUnit, type ScrapedRow } from "./parse";
+import { parseMarketDate } from "./market-date";
 
 /**
  * Scrapes today's wholesale price table from the official Kalimati Fruits &
@@ -14,11 +15,14 @@ export async function fetchKalimatiPrices(): Promise<ScrapedRow[]> {
   const res = await fetch("https://kalimatimarket.gov.np/price", {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; KrisearchBot/1.0)" },
     signal: AbortSignal.timeout(20_000),
+    cache: "no-store",
   });
   if (!res.ok) throw new Error(`Kalimati Market fetch failed: HTTP ${res.status}`);
   const html = await res.text();
 
   const $ = cheerio.load(html);
+  const dateRecorded = parseMarketDate($("h4").map((_, el) => $(el).text()).get().join(" "));
+  if (!dateRecorded) throw new Error("Kalimati: published market date could not be verified");
   const table = $("#commodityPriceParticular");
   if (table.length === 0) throw new Error("Kalimati Market: price table not found — page structure may have changed");
 
@@ -35,6 +39,7 @@ export async function fetchKalimatiPrices(): Promise<ScrapedRow[]> {
       min: parsePriceCell(minRaw),
       max: parsePriceCell(maxRaw),
       avg: parsePriceCell(avgRaw),
+      dateRecorded,
     });
   });
   return rows;

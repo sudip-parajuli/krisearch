@@ -31,6 +31,7 @@ function getVisionModels(): string[] {
 export function hasOpenRouterKey(): boolean {
   return !!process.env.OPENROUTER_API_KEY;
 }
+export function hasTextAI(): boolean { return Boolean(process.env.OPENROUTER_API_KEY || (process.env.GEMINI_API_KEY && process.env.GEMINI_MODEL)); }
 
 type TextContent = { type: "text"; text: string };
 type ImageContent = { type: "image_url"; image_url: { url: string } };
@@ -41,6 +42,18 @@ export async function callOpenRouter(
   messages: { role: "system" | "user"; content: MessageContent }[],
   opts: { maxTokens?: number; temperature?: number; timeoutMs?: number; vision?: boolean } = {}
 ): Promise<string | null> {
+  if (!opts.vision && process.env.GEMINI_API_KEY && process.env.GEMINI_MODEL) {
+    try {
+      const model = process.env.GEMINI_MODEL;
+      if (!/^[a-zA-Z0-9._-]+$/.test(model)) return null;
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST", signal: AbortSignal.timeout(opts.timeoutMs ?? 20_000),
+        headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+        body: JSON.stringify({ systemInstruction: { parts: messages.filter(m => m.role === "system").map(m => ({ text: typeof m.content === "string" ? m.content : "" })) }, contents: messages.filter(m => m.role === "user").map(m => ({ role: "user", parts: [{ text: typeof m.content === "string" ? m.content : "" }] })), generationConfig: { maxOutputTokens: opts.maxTokens ?? 500, temperature: opts.temperature ?? 0 } }),
+      });
+      if (res.ok) { const data = await res.json(); const text = data.candidates?.[0]?.content?.parts?.filter((p: { text?: string; thought?: boolean }) => p.text && !p.thought).map((p: { text: string }) => p.text).join("\n"); if (text) return text; }
+    } catch { /* Optional OpenRouter fallback follows. */ }
+  }
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
 

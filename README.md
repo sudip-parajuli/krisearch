@@ -27,6 +27,12 @@ Reference information, community posts and AI-generated text serve different
 purposes. AI output is an assistive signal and is not independently verified
 agronomic advice. Coverage, source freshness and language support vary by page.
 
+## Source automation and AI
+
+Daily source jobs import official market prices and agricultural notices. Prices retain the source publication date; new structured vendor/tool/scheme imports are reviewed before publication. Pages refresh while visible, and administrators can inspect job results and run imports manually. English/Nepali AI questions and separately labeled feed replies support Gemini or OpenRouter, remaining disabled until a provider is configured.
+
+Apply migration `0010_automation.sql` and configure the production environment before activating the worker. Additional catalogs require genuine approved provider feeds. See the [automation runbook](docs/AUTOMATION.md) for setup, feed contracts, budgets and operational limits.
+
 ## Run locally
 
 Requires Node.js 20.9+ and npm. Uses Next.js 16, TypeScript, Tailwind CSS and Supabase.

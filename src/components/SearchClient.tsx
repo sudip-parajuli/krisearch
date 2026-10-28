@@ -19,6 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { createClient } from "@/lib/supabase/client";
+import { ensureSession } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
 import { EmptyState } from "./EmptyState";
 import type { SearchResults } from "@/lib/data";
@@ -45,6 +47,7 @@ export function SearchClient({ initialQuery, results }: { initialQuery: string; 
     if (!topCrop) return;
     setLoadingOverview(true);
     try {
+      await ensureSession(createClient());
       const res = await fetch("/api/ai/search-overview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

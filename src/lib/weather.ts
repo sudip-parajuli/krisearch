@@ -33,6 +33,8 @@ export async function fetchWeather(latitude: number, longitude: number): Promise
     }));
 
     return {
+      fetchedAt: new Date().toISOString(),
+      observedAt: typeof data.current.time === "string" ? `${data.current.time}+05:45` : undefined,
       current: {
         temperature: data.current.temperature_2m,
         weatherCode: data.current.weather_code,

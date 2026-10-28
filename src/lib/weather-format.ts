@@ -13,6 +13,8 @@ export type DailyForecast = {
 };
 
 export type Weather = {
+  fetchedAt?: string;
+  observedAt?: string;
   current: {
     temperature: number;
     weatherCode: number;

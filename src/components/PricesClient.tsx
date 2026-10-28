@@ -5,8 +5,10 @@ import { PriceCropSelect } from "./PriceCropSelect";
 import { EmptyState } from "./EmptyState";
 import type { Crop, MarketPrice } from "@/types/database";
 import { groupPrices, priceAge } from "@/lib/market-display";
+import { useAutoRefresh } from "@/lib/useAutoRefresh";
 
 export function PricesClient({ crops, prices }: { crops: Crop[]; prices: MarketPrice[] }) {
+  useAutoRefresh();
   const { t, lang } = useLanguage();
   const cropById = new Map(crops.map((c) => [c.id, c]));
 

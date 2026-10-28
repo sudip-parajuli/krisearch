@@ -1,6 +1,8 @@
 import { getVendors, getDistricts, getCrops } from "@/lib/data";
 import { VendorsClient } from "@/components/VendorsClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
+import { SourceUpdates } from "@/components/SourceUpdates";
+import { LiveRefresh } from "@/components/LiveRefresh";
 import type { VendorType } from "@/types/database";
 
 export default async function VendorsPage({
@@ -19,6 +21,8 @@ export default async function VendorsPage({
     <div>
       <SupabaseSetupNotice />
       <VendorsClient vendors={vendors} districts={districts} crops={crops} />
+      <LiveRefresh />
+      <SourceUpdates kind="vendor" />
     </div>
   );
 }

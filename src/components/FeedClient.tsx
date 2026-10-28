@@ -8,10 +8,12 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { FeedFilters } from "./FeedFilters";
 import { PostCard } from "./PostCard";
 import { EmptyState } from "./EmptyState";
+import { useAutoRefresh } from "@/lib/useAutoRefresh";
 import type { PostRow } from "@/lib/data";
 import type { Crop, District } from "@/types/database";
 
 export function FeedClient({ posts, crops, districts }: { posts: PostRow[]; crops: Crop[]; districts: District[] }) {
+  useAutoRefresh(60000);
   const { t } = useLanguage();
   const [myFarm, setMyFarm] = useState(false);
   const [myFarmProfile, setMyFarmProfile] = useState<{ district_id: number | null; crops_grown: number[] | null } | null>(null);

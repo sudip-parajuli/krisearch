@@ -83,6 +83,7 @@ export function NewPostForm({
     setDiagnosing(true);
     setDiagnosis(null);
     try {
+      await ensureSession(createClient());
       const res = await fetch("/api/ai/diagnose-photo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,11 +161,14 @@ export function NewPostForm({
       body: JSON.stringify({ type: "post", id: post.id }),
     }).catch(() => {});
 
+      fetch("/api/ai/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ postId: post.id }), keepalive: true }).catch(() => {});
     router.push(`/post/${post.id}`);
     router.refresh();
   }
 
   return (
+    <>
+    <p className="mb-4 text-xs text-neutral-500">सार्वजनिक प्रश्नमा AI सहायकको जवाफ आउन सक्छ। व्यक्तिगत विवरण नलेख्नुहोस्। / Public questions may receive AI assistance. Leave out private information.</p>
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <h1 className="text-xl font-bold">{t("createPostTitle")}</h1>
       <div>
@@ -302,5 +306,6 @@ export function NewPostForm({
         {submitting ? t("postingBusy") : t("submitPost")}
       </button>
     </form>
+    </>
   );
 }

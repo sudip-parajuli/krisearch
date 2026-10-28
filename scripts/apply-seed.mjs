@@ -283,7 +283,7 @@ async function main() {
   ].map(([crop, market_name, price_per_unit, unit, date_recorded, source]) => ({
     crop_id: cropId(crop), market_name, price_per_unit, unit, date_recorded, source,
   }));
-  fail("market_prices", (await supabase.from("market_prices").upsert(priceRows, { onConflict: "crop_id,market_name,date_recorded", ignoreDuplicates: true })).error);
+  fail("market_prices", (await supabase.from("market_prices").upsert(priceRows, { onConflict: "crop_id,market_name,date_recorded,source,unit", ignoreDuplicates: true })).error);
 
   console.log("Retiring the old made-up vendor listings (real ones below)...");
   // These were fabricated placeholder businesses with fake phone numbers —

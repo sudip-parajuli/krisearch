@@ -4,6 +4,7 @@ import { createAdminClient, getAdminUserIds } from "@/lib/supabase/admin";
 import { updateReportStatus, setVerifiedBadge, updateFeedbackStatus, reviewVerificationRequest } from "./actions";
 import { EmptyState } from "@/components/EmptyState";
 import { SyncPricesButton } from "@/components/SyncPricesButton";
+import { AutomationAdmin } from "@/components/AutomationAdmin";
 import type { Report, Profile, Feedback, VerificationRequest } from "@/types/database";
 
 export default async function AdminPage() {
@@ -44,6 +45,7 @@ export default async function AdminPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <AutomationAdmin />
       <div>
         <h1 className="mb-3 text-xl font-bold">Market price sync</h1>
         <SyncPricesButton />

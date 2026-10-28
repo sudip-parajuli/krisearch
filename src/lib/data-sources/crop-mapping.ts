@@ -19,10 +19,10 @@ const CROP_PATTERNS: [cropNameEn: string, patterns: string[]][] = [
   ["Tomato", ["गोलभेडा", "गोलभेंडा"]],
   ["Potato", ["आलु"]],
   ["Onion", ["प्याज सुकेको", "सुकेको प्याज"]], // dry onion, not green onion (प्याज हरियो)
-  ["Carrot", ["गाजर"]],
+  ["Carrot", ["गाजर", "गाँजर"]],
   ["Cabbage", ["बन्दा"]],
   ["Cauliflower", ["काउली"]],
-  ["Mushroom (Button)", ["च्याउ"]],
+  ["Mushroom (Button)", ["च्याउ(बटन)", "च्याउ (बटन)", "बटन च्याउ"]],
   ["Apple", ["स्याउ"]],
   ["Banana", ["केरा"]],
   ["Ginger", ["अदुवा"]],

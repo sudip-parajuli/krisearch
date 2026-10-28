@@ -445,7 +445,7 @@ select c.id, v.market, v.price, v.unit, v.d::date, v.source from (values
   ('Chilli (Dry)', 'Kalimati, Kathmandu', 525, 'per kg', '2026-08-30', 'Kalimati wholesale (ramropatro.com)')
 ) as v(crop_name, market, price, unit, d, source)
 join crops c on c.name_en = v.crop_name
-on conflict (crop_id, market_name, date_recorded) do nothing;
+on conflict (crop_id, market_name, date_recorded, source, unit) do nothing;
 
 -- ============ VENDORS — real organizations (checked live 2026-09-01) ============
 -- Two provenance tiers, marked per-row below:

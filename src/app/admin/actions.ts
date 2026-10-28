@@ -4,6 +4,26 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, getAdminUserIds } from "@/lib/supabase/admin";
 import type { ReportStatus, VerifiedBadge } from "@/types/database";
+import { reviewImport } from "@/lib/automation/sources";
+import { allowedSourceUrl } from "@/lib/automation/validation";
+
+export async function registerAutomationSource(form: FormData) {
+  await assertAdmin();
+  const url = allowedSourceUrl(String(form.get("url") ?? ""), undefined, process.env.AUTOMATION_ALLOWED_HOSTS);
+  const label = String(form.get("label") ?? "").trim().slice(0, 120);
+  const kind = String(form.get("kind"));
+  if (!url || !label || !["scheme", "vendor", "tool", "notice"].includes(kind)) throw new Error("Enter an approved HTTPS source and a valid catalog kind.");
+  const admin = createAdminClient(); if (!admin) throw new Error("Database admin is unavailable");
+  const id = `${kind}-${crypto.randomUUID()}`;
+  const { error } = await admin.from("automation_sources").insert({ id, label, kind, url, format: "json", auto_publish: false });
+  if (error) throw new Error("The source could not be registered");
+  revalidatePath("/admin");
+}
+
+export async function reviewAutomationItem(id: string, decision: "publish" | "ignore") {
+  await assertAdmin(); await reviewImport(id, decision);
+  for (const path of ["/admin", "/updates", "/schemes", "/vendors", "/tools", "/feed"]) revalidatePath(path);
+}
 
 type FeedbackStatus = "open" | "reviewed";
 

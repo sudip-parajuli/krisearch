@@ -8,10 +8,12 @@ import { describeWeatherCode } from "@/lib/weather-format";
 import { EmptyState } from "./EmptyState";
 import type { District } from "@/types/database";
 import type { Weather } from "@/lib/weather-format";
+import { useAutoRefresh } from "@/lib/useAutoRefresh";
 
 const iconMap = { sun: Sun, cloud: Cloud, rain: CloudRain, storm: CloudLightning, snow: Snowflake, fog: CloudFog };
 
 export function WeatherClient({ districts, selected, weather }: { districts: District[]; selected: District | null; weather: Weather }) {
+  useAutoRefresh(1800000);
   const { t, lang } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
@@ -31,6 +33,7 @@ export function WeatherClient({ districts, selected, weather }: { districts: Dis
       </div>
 
       <select
+        aria-label={t("weatherSelectDistrict")}
         value={selected?.id ?? ""}
         onChange={(e) => selectDistrict(e.target.value)}
         className="w-full max-w-xs rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900"
@@ -51,6 +54,7 @@ export function WeatherClient({ districts, selected, weather }: { districts: Dis
         <EmptyState icon={Cloud} title={t("weatherUnavailable")} />
       ) : (
         <>
+          <p className="text-xs text-neutral-500">Open-Meteo · {lang === "ne" ? "स्वचालित ताजा जाँच: ३० मिनेट" : "Automatic refresh: 30 minutes"}{weather.observedAt ? ` · ${new Date(weather.observedAt).toLocaleString(lang === "ne" ? "ne-NP" : "en-GB", { timeZone: "Asia/Kathmandu" })}` : ""}</p>
           {(weather.frostRisk || weather.heavyRainRisk) && (
             <div className="flex flex-col gap-2">
               {weather.frostRisk && (

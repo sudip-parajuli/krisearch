@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyRemedy } from "@/lib/ai/factcheck";
+import { aiRequest } from "@/lib/ai/request";
+import { budget } from "@/lib/ai/answers";
 
 /**
  * Fire-and-forget endpoint called right after a post or comment is created:
@@ -11,7 +13,8 @@ import { classifyRemedy } from "@/lib/ai/factcheck";
  * person who just submitted it.
  */
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
+  const parsed = await aiRequest(request); if (parsed instanceof Response) return parsed;
+  const body = parsed.body;
   const type = body?.type as "post" | "comment" | undefined;
   const id = body?.id as string | undefined;
   if (!type || !id || (type !== "post" && type !== "comment")) {
@@ -25,19 +28,22 @@ export async function POST(request: Request) {
   let answerBody = "";
 
   if (type === "comment") {
-    const { data: comment } = await supabase.from("comments").select("body, post_id").eq("id", id).maybeSingle();
+    const { data: comment } = await supabase.from("comments").select("body, post_id, author_id").eq("id", id).maybeSingle();
     if (!comment) return NextResponse.json({ verdict: null });
+    if (comment.author_id !== parsed.userId) return NextResponse.json({ error: "Only the author may request a classification" }, { status: 403 });
     const { data: post } = await supabase.from("posts").select("title, body").eq("id", comment.post_id).maybeSingle();
     postTitle = post?.title ?? "";
     postBody = post?.body ?? "";
     answerBody = comment.body;
   } else {
-    const { data: post } = await supabase.from("posts").select("title, body").eq("id", id).maybeSingle();
+    const { data: post } = await supabase.from("posts").select("title, body, author_id").eq("id", id).maybeSingle();
     if (!post) return NextResponse.json({ verdict: null });
+    if (post.author_id !== parsed.userId) return NextResponse.json({ error: "Only the author may request a classification" }, { status: 403 });
     postTitle = post.title;
     answerBody = post.body;
   }
 
+  if (!await budget(parsed.userId)) return NextResponse.json({ verdict: null }, { status: 429 });
   const result = await classifyRemedy({ postTitle, postBody, answerBody });
   if (!result) return NextResponse.json({ verdict: null });
 

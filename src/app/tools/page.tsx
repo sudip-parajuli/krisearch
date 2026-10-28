@@ -1,6 +1,8 @@
 import { getEquipmentList } from "@/lib/data";
 import { ToolsClient } from "@/components/ToolsClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
+import { SourceUpdates } from "@/components/SourceUpdates";
+import { LiveRefresh } from "@/components/LiveRefresh";
 
 export default async function ToolsPage({
   searchParams,
@@ -16,6 +18,8 @@ export default async function ToolsPage({
     <div>
       <SupabaseSetupNotice />
       <ToolsClient equipment={equipment} scope={scope} />
+      <LiveRefresh />
+      <SourceUpdates kind="tool" />
     </div>
   );
 }

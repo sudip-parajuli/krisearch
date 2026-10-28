@@ -26,4 +26,4 @@ export function normalizeUnit(raw: string): string | null {
   return null; // unrecognized unit — caller should skip the row rather than guess
 }
 
-export type ScrapedRow = { commodity: string; unit: string; min: number | null; max: number | null; avg: number | null };
+export type ScrapedRow = { commodity: string; unit: string; min: number | null; max: number | null; avg: number | null; dateRecorded?: string };

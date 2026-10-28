@@ -2,6 +2,7 @@ import { getPosts, getCrops, getDistricts } from "@/lib/data";
 import { FeedClient } from "@/components/FeedClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
 import type { PostType } from "@/types/database";
+import { SourceUpdates } from "@/components/SourceUpdates";
 
 export default async function FeedPage({
   searchParams,
@@ -24,6 +25,7 @@ export default async function FeedPage({
     <div>
       <SupabaseSetupNotice />
       <FeedClient posts={posts} crops={crops} districts={districts} />
+      <SourceUpdates limit={4} />
     </div>
   );
 }

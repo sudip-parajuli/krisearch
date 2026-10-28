@@ -12,6 +12,7 @@ import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { GroupBuyPledges } from "@/components/GroupBuyPledges";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
 import { slugify } from "@/lib/slug";
+import { AIAnswerCard } from "@/components/AIAnswerCard";
 
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -72,6 +73,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {post.type === "group_buy" && <GroupBuyPledges postId={post.id} initialPledges={pledges} />}
+      {["question", "disease_pest_report", "fertilizer_tip", "general_discussion"].includes(post.type) && <AIAnswerCard postId={post.id} />}
 
       <div className="mt-6">
         <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-neutral-500">
