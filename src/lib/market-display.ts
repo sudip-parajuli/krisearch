@@ -3,8 +3,9 @@ import type { MarketPrice } from "@/types/database";
 export function groupPrices(prices: MarketPrice[]) {
   const grouped = new Map<string, MarketPrice[]>();
   for (const price of prices) {
-    // A kilo and a quintal must never be compared as the same quote.
-    const key = JSON.stringify([price.crop_id, price.market_name, price.unit]);
+    // Keep units and source/variety descriptions separate: mappings can put
+    // oyster and button mushrooms under the same crop ID.
+    const key = JSON.stringify([price.crop_id, price.market_name, price.unit, price.source]);
     grouped.set(key, [...(grouped.get(key) ?? []), price]);
   }
   for (const entries of grouped.values()) entries.sort((a, b) => (b.date_recorded ?? "").localeCompare(a.date_recorded ?? ""));

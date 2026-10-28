@@ -21,7 +21,7 @@ software and AI to practical agricultural problems in Nepal.
 - Searchable `/crops` directory with bilingual/romanized aliases and category filters.
 - Saved crop and post links at `/saved`, stored in this browser without sign-in.
 - Task-based homepage shortcuts and a complete mobile section menu.
-- Market-date freshness labels and comparisons separated by price unit.
+- Market-date freshness labels and comparisons separated by price unit and source/variety.
 
 Reference information, community posts and AI-generated text serve different
 purposes. AI output is an assistive signal and is not independently verified

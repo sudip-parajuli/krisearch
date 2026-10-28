@@ -8,7 +8,7 @@
 - Homepage search and task shortcuts; the existing green/earth visual identity remains.
 - `/crops` directory with categories and English/Nepali/Romanized Nepali name matching. Links use real database crops rather than a hard-coded rice shortcut.
 - Browser-local crop/post bookmarks and a `/saved` collection; clear storage failure, limit and empty states.
-- Market comparisons grouped by crop, market **and unit**, sorted by recorded date. Missing prices are no longer printed as numeric quotes; older/unknown dates are labeled.
+- Market comparisons grouped by crop, market, **unit and source/variety description**, sorted by recorded date. Missing prices are no longer printed as numeric quotes; older/unknown dates are labeled.
 - Search components reset on query changes, preventing a previous crop's AI overview from remaining on a new search. Search filter grammar is stripped from user input and query length bounded.
 - Loading and recovery screens; offline caching is restricted to build assets and a generic fallback, keeping authenticated HTML and changing data out of the cache.
 - Reproducible helper tests and a checked-in local environment template.

@@ -36,6 +36,10 @@ test("price comparisons keep units separate and sort newest first", () => {
   const grouped = groupPrices([{ ...quote, date_recorded: "2026-10-25" }, { ...quote, date_recorded: "2026-10-28" }, { ...quote, unit: "quintal", date_recorded: "2026-10-28" }]);
   assert.equal(grouped.size, 2); assert.equal([...grouped.values()][0][0].date_recorded, "2026-10-28");
 });
+test("source varieties mapped to the same crop are not compared", () => {
+  const quote = { crop_id: 1, market_name: "Kalimati", unit: "kg", date_recorded: "2026-10-28" };
+  assert.equal(groupPrices([{ ...quote, source: "Kalimati - oyster mushroom" }, { ...quote, source: "Kalimati - button mushroom" }]).size, 2);
+});
 test("price freshness handles Nepal time, old data, missing and invalid dates", () => {
   const now = new Date("2026-10-28T12:00:00+05:45");
   assert.equal(priceAge("2026-10-28", now), "recent");
