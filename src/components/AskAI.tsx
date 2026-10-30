@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Sparkles, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -108,6 +109,7 @@ export function AskAI({ postId }: { postId?: string }) {
               : "Ask AI"}
         </button>
       </form>
+      {error === "session" && <Link href="/login" className="inline-block text-sm text-green-700 underline dark:text-green-400">{ne ? "लगइन गर्नुहोस्" : "Sign in"}</Link>}
       {error && (
         <p role="alert" className="text-sm text-amber-800 dark:text-amber-300">
           {error === "session" ? (ne ? "सत्र सुरु हुन सकेन। लगइन गरेर फेरि प्रयास गर्नुहोस्।" : "A session could not be started. Please sign in and try again.") : error === "limited" ? (ne ? "AI प्रयोग सीमा पुगेको छ वा सेवा सेटअप अपूर्ण छ। पछि फेरि प्रयास गर्नुहोस्।" : "The AI request limit has been reached or setup is incomplete. Please try later.") : error === "provider" ? (ne ? "AI प्रदायकबाट जवाफ आएन। केही समयपछि प्रयास गर्नुहोस्।" : "The AI provider could not return an answer. Please try again later.") : (ne ? "जडानमा समस्या भयो। फेरि प्रयास गर्नुहोस्।" : "The connection failed. Please try again.")}

@@ -166,7 +166,7 @@ export async function answerPost(
   )
     return { status: "not_eligible" };
   const version = createHash("sha256")
-    .update(`${post.title}\n${post.body}`)
+    .update(`${process.env.GEMINI_MODEL ?? process.env.OPENROUTER_MODELS ?? "default"}\n${post.title}\n${post.body}`)
     .digest("hex");
   const { data: existing } = await admin
     .from("ai_answers")
@@ -177,6 +177,7 @@ export async function answerPost(
     return { status: "answered" };
   if (
     existing?.status === "failed" &&
+    existing.version === version &&
     Date.now() - Date.parse(existing.updated_at) < 3600000
   )
     return { status: "retry_later" };

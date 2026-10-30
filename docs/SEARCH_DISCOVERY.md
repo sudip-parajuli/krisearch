@@ -22,7 +22,7 @@ The language toggle is a browser preference on one bilingual URL. No fake `hrefl
 
 ## Gemini operations
 
-Production uses `gemini-2.5-flash-lite`, listed with free-tier text input/output on Google's pricing page when configured (2026-10-30). Eligibility and quota depend on the AI Studio project. The application cannot force free-tier billing: keep billing disabled for free-only use and inspect project quota in AI Studio. No paid model fallback, paid search grounding or billing changes are enabled by this setup. Existing database request budgets still apply.
+Production uses `gemini-3.5-flash-lite`, listed with free-tier text input/output on Google's pricing page when configured (2026-10-30). Eligibility and quota depend on the AI Studio project. The application cannot force free-tier billing: keep billing disabled for free-only use and inspect project quota in AI Studio. No paid model fallback, paid search grounding or billing changes are enabled by this setup. Existing database request budgets still apply.
 
 Public question text and relevant public reference context reach Google when AI is used. Google's free tier can use submitted content to improve products; the interface and About page explain this. Responses use JSON mode and server-allowed citations. Existing photo analysis still requires OpenRouter vision configuration.
 

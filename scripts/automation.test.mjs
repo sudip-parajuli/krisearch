@@ -222,7 +222,7 @@ test("Gemini JSON requests use server headers and ignore thinking parts", async 
  const previousKey = process.env.GEMINI_API_KEY;
  const previousModel = process.env.GEMINI_MODEL;
  process.env.GEMINI_API_KEY = "test-only-not-a-real-key";
- process.env.GEMINI_MODEL = "gemini-2.5-flash-lite";
+ process.env.GEMINI_MODEL = "gemini-3.5-flash-lite";
  try {
   globalThis.fetch = async (url, options) => {
    assert.equal(url.includes("?key="), false);

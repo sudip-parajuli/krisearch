@@ -63,7 +63,8 @@ export async function runAutomation() {
         (prices.status !== 200 ||
           ("body" in prices &&
             prices.body.sources?.some((source) => source.error)))) ||
-      (Array.isArray(sources) && sources.some((source) => source.error));
+      (Array.isArray(sources) && sources.some((source) => source.error)) ||
+      (ai && typeof ai === "object" && "status" in ai && ["failed", "setup_required", "limited"].includes(String(ai.status)));
     const details = { prices, sources, ai };
     if (run)
       await admin
