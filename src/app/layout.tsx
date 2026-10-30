@@ -15,6 +15,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SavedProvider } from "@/components/SavedProvider";
+import { FloatingAI } from "@/components/FloatingAI";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -129,6 +130,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </div>
               </footer>
               <FeedbackWidget />
+              <FloatingAI />
               <ServiceWorkerRegister />
             </SavedProvider>
           </ThemeProvider>
