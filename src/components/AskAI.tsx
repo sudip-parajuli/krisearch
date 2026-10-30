@@ -14,7 +14,7 @@ export function AskAI({ postId }: { postId?: string }) {
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<BotAnswer | null>(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"session" | "limited" | "provider" | "network" | null>(null);
   useEffect(() => {
     const c = new AbortController();
     fetch("/api/ai/ask", { signal: c.signal })
@@ -29,10 +29,10 @@ export function AskAI({ postId }: { postId?: string }) {
   async function ask() {
     if (busy || !enabled || question.trim().length < 5) return;
     setBusy(true);
-    setError(false);
+    setError(null);
     setResult(null);
     try {
-      await ensureSession(createClient());
+      try { await ensureSession(createClient()); } catch { setError("session"); return; }
       const response = await fetch("/api/ai/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,10 +40,10 @@ export function AskAI({ postId }: { postId?: string }) {
         signal: AbortSignal.timeout(45_000),
       });
       const data = await response.json();
-      if (!response.ok || !data.result) throw new Error();
+      if (!response.ok || !data.result) { setError(response.status === 429 ? "limited" : response.status === 401 ? "session" : "provider"); return; }
       setResult(data.result);
     } catch {
-      setError(true);
+      setError("network");
     } finally {
       setBusy(false);
     }
@@ -110,9 +110,7 @@ export function AskAI({ postId }: { postId?: string }) {
       </form>
       {error && (
         <p role="alert" className="text-sm text-amber-800 dark:text-amber-300">
-          {ne
-            ? "जवाफ उपलब्ध भएन। प्रयोग सीमा वा सेवा जाँचेर पछि फेरि प्रयास गर्नुहोस्।"
-            : "No answer is available. The service may be unavailable or at its usage limit; try again later."}
+          {error === "session" ? (ne ? "सत्र सुरु हुन सकेन। लगइन गरेर फेरि प्रयास गर्नुहोस्।" : "A session could not be started. Please sign in and try again.") : error === "limited" ? (ne ? "AI प्रयोग सीमा पुगेको छ वा सेवा सेटअप अपूर्ण छ। पछि फेरि प्रयास गर्नुहोस्।" : "The AI request limit has been reached or setup is incomplete. Please try later.") : error === "provider" ? (ne ? "AI प्रदायकबाट जवाफ आएन। केही समयपछि प्रयास गर्नुहोस्।" : "The AI provider could not return an answer. Please try again later.") : (ne ? "जडानमा समस्या भयो। फेरि प्रयास गर्नुहोस्।" : "The connection failed. Please try again.")}
         </p>
       )}
       {result && (

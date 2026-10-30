@@ -97,6 +97,7 @@ export async function callOpenRouter(
           }),
         },
       );
+      if (!res.ok) console.warn("Gemini request rejected", { status: res.status, model });
       if (res.ok) {
         const data = await res.json();
         const text = data.candidates?.[0]?.content?.parts
@@ -106,8 +107,10 @@ export async function callOpenRouter(
           .map((p: { text: string }) => p.text)
           .join("\n");
         if (text) return text;
+        console.warn("Gemini returned no answer", { model, finishReason: data.candidates?.[0]?.finishReason ?? "blocked_or_empty" });
       }
     } catch {
+      console.warn("Gemini request failed", { reason: "network_timeout_or_invalid_response" });
       /* Optional OpenRouter fallback follows. */
     }
   }
