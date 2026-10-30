@@ -1,4 +1,3 @@
-import { isDemoPost } from "@/lib/demo-content";
 import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { getPosts, getCrops, getDistricts } from "@/lib/data";
@@ -48,12 +47,6 @@ export default async function FeedPage({
       <h1 className="mb-5 text-2xl font-semibold">
         किसानका प्रश्न, उत्तर र अनुभव · Community
       </h1>
-      {posts.some(isDemoPost) && (
-        <p className="mb-4 text-sm text-amber-800 dark:text-amber-300">
-          “Demo scenario” भनेर चिनाइएका पोस्ट नमुना हुन्; वास्तविक किसानका अनुभव
-          होइनन्। Labeled examples use sample users, votes and replies.
-        </p>
-      )}
       <SupabaseSetupNotice />
       <FeedClient
         posts={posts.slice(0, 30)}

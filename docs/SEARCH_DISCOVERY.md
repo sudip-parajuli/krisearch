@@ -18,7 +18,7 @@ The language toggle is a browser preference on one bilingual URL. No fake `hrefl
 - `/sitemap.xml` was submitted and Google returned **Success**. Crawling/indexing reports need time to populate; submission is not proof that pages are indexed.
 - Supabase anonymous sign-ins were enabled on the Free plan with owner approval, preserving existing RLS and AI budgets.
 - Gemini 3.5 Flash-Lite produced Nepali and English responses through the public guest form in live verification. The earlier 2.5 model returned 404 because Google restricts legacy-model access for new projects.
-- The 18 current sample discussions are demo fixtures. They remain visibly labeled and are excluded from public discovery feeds. The reference sitemap exposes 56 URLs. Genuine new posts will enter the post sitemap and RSS automatically.
+- The 18 current sample discussions are demo fixtures. They remain marked with a small Example tag and are excluded from public discovery feeds. The reference sitemap exposes 56 URLs. Genuine new posts will enter the post sitemap and RSS automatically.
 - Bing Webmaster Tools has not been configured.
 
 ## Owner setup
@@ -41,4 +41,4 @@ Sitemaps and structured data improve discovery and interpretation, not ranking g
 
 ## Demonstration content
 
-The repository contains 18 synthetic community scenarios from `scripts/seed-demo.mjs`. Exact title/body fixtures are labeled as demos, excluded from RSS/post sitemaps and Q&A markup, given noindex metadata, and skipped by automatic AI replies. They are retained for demonstration, not presented as real farmer experiences. Update `src/lib/demo-content.ts` alongside any demo fixture changes. New genuine public posts are eligible for discovery.
+The repository contains 18 synthetic community scenarios from `scripts/seed-demo.mjs`. Exact title/body fixtures are marked as examples, excluded from RSS/post sitemaps and Q&A markup, given noindex metadata, and skipped by automatic AI replies. They remain publicly visible as examples, with no broad demo banners. Synthetic votes and expert credentials are not shown as genuine participation. They are not presented as real farmer experiences. Update `src/lib/demo-content.ts` alongside any demo fixture changes. New genuine public posts are eligible for discovery.

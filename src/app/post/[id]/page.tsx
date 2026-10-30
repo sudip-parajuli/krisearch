@@ -40,20 +40,10 @@ export default async function PostDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      {demo ? (
-        <p
-          role="note"
-          className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
-        >
-          नमुना सामग्री · Demo scenario. The users, votes, comments and selected
-          answers on this example are sample data, not verified farmer reports.
-        </p>
-      ) : (
-        <JsonLd data={postSchema(post, comments)} />
-      )}
+      {demo ? <p className="mb-3 text-xs font-medium text-neutral-500">उदाहरण · Example discussion</p> : <JsonLd data={postSchema(post, comments)} />}
       <SupabaseSetupNotice />
       <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <VoteButtons postId={post.id} initialScore={post.vote_score} />
+        {!demo && <VoteButtons postId={post.id} initialScore={post.vote_score} />}
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center justify-between gap-2">
             <AuthorIdentity

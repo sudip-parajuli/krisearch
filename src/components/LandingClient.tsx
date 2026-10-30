@@ -119,9 +119,9 @@ export function LandingClient({ recentPosts, stats }: { recentPosts: PostRow[]; 
 
       <FarmShortcuts />
 
-      {/* Live stats — proof the platform is active, right up front */}
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {statItems.map((s, i) => (
+      {/* Reference coverage; community fixtures are not participation statistics. */}
+      <section className="mx-auto grid w-full max-w-sm grid-cols-1 gap-3">
+        {statItems.filter(s => s.labelKey === "statCrops").map((s, i) => (
           <motion.div
             key={s.labelKey}
             initial={{ opacity: 0, y: 12 }}

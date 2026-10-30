@@ -1,4 +1,3 @@
-import { isDemoPost } from "@/lib/demo-content";
 import { pageMetadata } from "@/lib/seo";
 import { getPosts, getPlatformStats } from "@/lib/data";
 import { LandingClient } from "@/components/LandingClient";
@@ -13,13 +12,6 @@ export default async function Home() {
   return (
     <div>
       <SupabaseSetupNotice />
-      {recentPosts.some(isDemoPost) && (
-        <p className="mb-4 rounded-xl border border-amber-300 p-3 text-sm text-amber-800 dark:border-amber-800 dark:text-amber-300">
-          नमुना समुदाय · Community examples and counts currently include
-          demonstration data. Posts marked “Demo scenario” are not real farmer
-          reports.
-        </p>
-      )}
       <LandingClient recentPosts={recentPosts} stats={stats} />
     </div>
   );

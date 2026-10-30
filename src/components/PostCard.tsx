@@ -13,7 +13,7 @@ export function PostCard({ post }: { post: PostRow }) {
   const demo = isDemoPost(post);
   return (
     <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
-      <VoteButtons postId={post.id} initialScore={post.vote_score} />
+      {!demo && <VoteButtons postId={post.id} initialScore={post.vote_score} />}
       <div className="min-w-0 flex-1">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <AuthorIdentity
@@ -34,7 +34,7 @@ export function PostCard({ post }: { post: PostRow }) {
 
         {demo && (
           <p className="mb-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
-            नमुना सामग्री · Demo scenario
+            उदाहरण · Example
           </p>
         )}
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
