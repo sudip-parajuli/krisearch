@@ -123,6 +123,7 @@ export function CommentSection({
           {[...topLevel].sort((a, b) => Number(b.is_best_answer) - Number(a.is_best_answer)).map((c) => (
             <li
               key={c.id}
+              id={`comment-${c.id}`}
               className={`rounded-lg border p-3 ${
                 c.is_best_answer
                   ? "border-green-400 bg-green-50 dark:border-green-800 dark:bg-green-950"
@@ -133,7 +134,7 @@ export function CommentSection({
               {repliesOf(c.id).length > 0 && (
                 <ul className="ml-4 mt-2 flex flex-col gap-2 border-l border-neutral-200 pl-3 dark:border-neutral-800">
                   {repliesOf(c.id).map((r) => (
-                    <li key={r.id}>
+                    <li key={r.id} id={`comment-${r.id}`}>
                       <CommentRow comment={r} isPostAuthor={isPostAuthor} onMarkBest={markBestAnswer} />
                     </li>
                   ))}

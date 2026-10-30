@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import { getDistricts } from "@/lib/data";
 import { fetchWeather } from "@/lib/weather";
 import { WeatherClient } from "@/components/WeatherClient";
@@ -25,3 +26,5 @@ export default async function WeatherPage({
     </div>
   );
 }
+
+export const metadata = pageMetadata("कृषि मौसम · District weather", "नेपालका जिल्लाको मौसम र पूर्वानुमान हेर्नुहोस्। District weather observations and forecasts to support farm planning.", "/weather");

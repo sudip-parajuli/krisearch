@@ -168,7 +168,7 @@ export function NewPostForm({
 
   return (
     <>
-    <p className="mb-4 text-xs text-neutral-500">सार्वजनिक प्रश्नमा AI सहायकको जवाफ आउन सक्छ। व्यक्तिगत विवरण नलेख्नुहोस्। / Public questions may receive AI assistance. Leave out private information.</p>
+    <p className="mb-4 text-xs text-neutral-500">सार्वजनिक पोस्ट र जवाफ खोज इन्जिनमा देखिन सक्छन्। प्रश्न AI प्रदायकमा पठाइन्छ। व्यक्तिगत विवरण नलेख्नुहोस्। / Public posts and replies may appear in search engines. Questions are sent to the AI provider for assistance; leave out private information.</p>
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <h1 className="text-xl font-bold">{t("createPostTitle")}</h1>
       <div>

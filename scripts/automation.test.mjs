@@ -195,3 +195,43 @@ test("import records discard unknown provider metadata", () => {
     description: "Public description",
   });
 });
+
+const { safeJsonLd, xmlEscape, pageMetadata } = load("seo.ts");
+const { postSchema } = load("post-schema.ts");
+test("public metadata and machine formats escape untrusted post text", () => {
+ const unsafe = "</script><script>alert(1)</script> & test";
+ const encoded = safeJsonLd({ text: unsafe });
+ assert.equal(encoded.includes("</script>"), false);
+ assert.equal(JSON.parse(encoded).text, unsafe);
+ assert.equal(xmlEscape('<x>&"'), "&lt;x&gt;&amp;&quot;");
+ assert.equal(pageMetadata("Title", "Description", "/post/test").alternates.canonical, "https://krisearch.vercel.app/post/test");
+});
+test("Q&A markup only promotes author-selected human top-level answers", () => {
+ const post = { id: "p1", type: "question", title: "How to grow rice?", body: "A public question", created_at: "2026-10-30T00:00:00Z", profiles: null };
+ const comments = [{id:"a1",body:"An accepted community answer",created_at:post.created_at,parent_comment_id:null,is_best_answer:true,profiles:null},{id:"a2",body:"A nested discussion reply",created_at:post.created_at,parent_comment_id:"a1",is_best_answer:false,profiles:null}];
+ const schema=postSchema(post,comments);
+ assert.equal(schema["@type"], "QAPage");
+ assert.equal(schema.mainEntity.answerCount,1);
+ assert.equal(schema.mainEntity.acceptedAnswer[0].text,comments[0].body);
+ assert.equal(schema.mainEntity.acceptedAnswer[0].url,"https://krisearch.vercel.app/post/p1#comment-a1");
+ assert.equal(postSchema({...post,type:"success_story"},comments)["@type"],"DiscussionForumPosting");
+});
+
+test("Gemini JSON requests use server headers and ignore thinking parts", async () => {
+ const previousFetch = globalThis.fetch;
+ const previousKey = process.env.GEMINI_API_KEY;
+ const previousModel = process.env.GEMINI_MODEL;
+ process.env.GEMINI_API_KEY = "test-only-not-a-real-key";
+ process.env.GEMINI_MODEL = "gemini-2.5-flash-lite";
+ try {
+  globalThis.fetch = async (url, options) => {
+   assert.equal(url.includes("?key="), false);
+   assert.equal(options.headers["x-goog-api-key"], "test-only-not-a-real-key");
+   assert.equal(JSON.parse(options.body).generationConfig.responseMimeType, "application/json");
+   return Response.json({candidates:[{content:{parts:[{text:"private reasoning",thought:true},{text:'{"answer":"A sufficiently long answer"}'}]}}]});
+  };
+  const {callOpenRouter}=load("ai/openrouter.ts");
+  const result=await callOpenRouter([{role:"system",content:"Return JSON"},{role:"user",content:"Rice question"}],{json:true});
+  assert.equal(result, '{"answer":"A sufficiently long answer"}');
+ } finally {globalThis.fetch=previousFetch; if(previousKey===undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY=previousKey; if(previousModel===undefined) delete process.env.GEMINI_MODEL; else process.env.GEMINI_MODEL=previousModel;}
+});

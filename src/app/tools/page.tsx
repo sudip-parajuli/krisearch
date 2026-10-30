@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import { getEquipmentList } from "@/lib/data";
 import { ToolsClient } from "@/components/ToolsClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
@@ -23,3 +24,5 @@ export default async function ToolsPage({
     </div>
   );
 }
+
+export const metadata = pageMetadata("कृषि औजार र प्रविधि · Farm tools", "कृषि औजार, सिँचाइ र आधुनिक खेती प्रविधिबारे जानकारी। Equipment references and availability information for Nepal.", "/tools");

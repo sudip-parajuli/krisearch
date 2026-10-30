@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo";
 import { getVendors, getDistricts, getCrops } from "@/lib/data";
 import { VendorsClient } from "@/components/VendorsClient";
 import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
@@ -26,3 +27,5 @@ export default async function VendorsPage({
     </div>
   );
 }
+
+export const metadata = pageMetadata("कृषि विक्रेता र सेवा · Vendors", "कृषि सामग्री, औजार र सेवाका व्यवसायहरूको सार्वजनिक विवरण। Agricultural suppliers and business information for Nepal.", "/vendors");

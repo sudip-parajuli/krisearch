@@ -33,6 +33,10 @@ Daily source jobs import official market prices and agricultural notices. Prices
 
 Apply migration `0010_automation.sql` and configure the production environment before activating the worker. Additional catalogs require genuine approved provider feeds. See the [automation runbook](docs/AUTOMATION.md) for setup, feed contracts, budgets and operational limits.
 
+## Search discovery
+
+Public posts, answers and crop/tool references have canonical metadata, structured data and paginated sitemaps. Published AI replies render on the server and remain separately labeled. See the [search discovery guide](docs/SEARCH_DISCOVERY.md) for Search Console setup and ongoing editorial work.
+
 ## Run locally
 
 Requires Node.js 20.9+ and npm. Uses Next.js 16, TypeScript, Tailwind CSS and Supabase.

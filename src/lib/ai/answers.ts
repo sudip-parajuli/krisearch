@@ -136,7 +136,7 @@ export async function generateAnswer(
         }),
       },
     ],
-    { maxTokens: 1500, temperature: 0.2, timeoutMs: 20_000 },
+    { maxTokens: 2200, temperature: 0.2, timeoutMs: 20_000, json: true },
   );
   if (!raw) return null;
   return parseAIAnswer(raw, citations);

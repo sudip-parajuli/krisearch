@@ -182,7 +182,8 @@ export type PostRow = Post & {
 export async function getPosts(
   filters: PostFilters = {},
   sort: "new" | "top" = "new",
-  limit = 30
+  limit = 30,
+  offset = 0
 ): Promise<PostRow[]> {
   if (!isSupabaseConfigured) return (warnUnconfigured("getPosts"), []);
   const supabase = await createClient();
@@ -192,7 +193,7 @@ export async function getPosts(
       "*, profiles:author_id(id, display_name, verified_badge, avatar_url, verification_method), crops:crop_id(id, name_en, name_np), districts:district_id(id, name)"
     )
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1);
 
   if (filters.cropId) query = query.eq("crop_id", filters.cropId);
   if (filters.districtId) query = query.eq("district_id", filters.districtId);

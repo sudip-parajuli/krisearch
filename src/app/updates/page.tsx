@@ -1,5 +1,6 @@
+import { pageMetadata } from "@/lib/seo";
 import { SourceUpdates } from "@/components/SourceUpdates";
-export const metadata = { title: "Source updates | Krisearch" };
+
 export default function UpdatesPage() {
   return (
     <div className="space-y-6">
@@ -15,3 +16,5 @@ export default function UpdatesPage() {
     </div>
   );
 }
+
+export const metadata = pageMetadata("आधिकारिक कृषि सूचना · Source updates", "स्वीकृत स्रोतबाट संकलित कृषि सूचना। Collection dates are separate from publication dates; check the original notice.", "/updates");

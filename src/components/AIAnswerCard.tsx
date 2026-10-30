@@ -11,10 +11,16 @@ type Result = {
   updated_at: string;
   language: "ne" | "en";
 };
-export function AIAnswerCard({ postId }: { postId: string }) {
+export function AIAnswerCard({
+  postId,
+  initialAnswer = null,
+}: {
+  postId: string;
+  initialAnswer?: Result | null;
+}) {
   const { lang } = useLanguage();
   const ne = lang === "ne";
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<Result | null>(initialAnswer);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);

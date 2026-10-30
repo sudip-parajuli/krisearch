@@ -1,3 +1,8 @@
+import { cache } from "react";
+import { pageMetadata } from "@/lib/seo";
+import { postSchema } from "@/lib/post-schema";
+import { JsonLd } from "@/components/JsonLd";
+import { getPublishedAIAnswer } from "@/lib/public-content";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Sprout, MapPin, MessageCircle } from "lucide-react";
@@ -14,18 +19,22 @@ import { SupabaseSetupNotice } from "@/components/SupabaseSetupNotice";
 import { slugify } from "@/lib/slug";
 import { AIAnswerCard } from "@/components/AIAnswerCard";
 
+const loadPost = cache(getPostById);
+
 export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const post = await getPostById(id);
+  const post = await loadPost(id);
   if (!post) notFound();
 
-  const [comments, pledges] = await Promise.all([
+  const [comments, pledges, aiAnswer] = await Promise.all([
     getCommentsForPost(id),
     post.type === "group_buy" ? getPledgesForPost(id) : Promise.resolve([]),
+    getPublishedAIAnswer(id),
   ]);
 
   return (
     <div className="mx-auto max-w-2xl">
+      <JsonLd data={postSchema(post, comments)} />
       <SupabaseSetupNotice />
       <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <VoteButtons postId={post.id} initialScore={post.vote_score} />
@@ -73,7 +82,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {post.type === "group_buy" && <GroupBuyPledges postId={post.id} initialPledges={pledges} />}
-      {["question", "disease_pest_report", "fertilizer_tip", "general_discussion"].includes(post.type) && <AIAnswerCard postId={post.id} />}
+      {["question", "disease_pest_report", "fertilizer_tip", "general_discussion"].includes(post.type) && <AIAnswerCard postId={post.id} initialAnswer={aiAnswer} />}
 
       <div className="mt-6">
         <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-neutral-500">
@@ -84,3 +93,5 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     </div>
   );
 }
+
+export async function generateMetadata({params}:{params:Promise<{id:string}>}) {const {id}=await params;const post=await loadPost(id);if(!post)return {title:"Post not found",robots:{index:false}};return pageMetadata(post.title,post.body,`/post/${id}`);}
