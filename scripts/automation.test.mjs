@@ -244,3 +244,10 @@ test("synthetic seed conversations are not mistaken for genuine posts", () => {
  assert.equal(matches.length,18);
  for(const m of matches) { const fixture={title:JSON.parse(m[1]),body:JSON.parse(m[2])};assert.equal(isDemoPost(fixture),true);assert.equal(isDemoPost({...fixture,body:"A genuinely different field report"}),false); }
 });
+
+test("AI retrieval recognizes Nepali crop nouns with attached case suffixes", () => {
+ const {mentionsCrop}=load("ai/retrieval.ts");
+ assert.equal(mentionsCrop({name_en:"Tomato",name_np:"गोलभेडा"},"गोलभेडाको बिरुवा कहिले सार्ने?"),true);
+ assert.equal(mentionsCrop({name_en:"Rice",name_np:"धान"},"धानमा के समस्या छ?"),true);
+ assert.equal(mentionsCrop({name_en:"Rice",name_np:"धान"},"What is the price?"),false);
+});

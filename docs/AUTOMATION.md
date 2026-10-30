@@ -42,9 +42,9 @@ Example feed contract (use real records and links from the approved host):
 
 Kinds: `notice`, `scheme`, `vendor`, `tool`. Schemes require a source `last_verified` date; optional fields are `subsidy_type`, `eligibility`, `how_to_apply`. Tools require a valid equipment category and source verification date; optional fields include `description`, `how_it_helps` and numeric nonnegative purchase prices. Vendors require an existing supported `vendor_type`; `contact_info` must be public business contact information. See `src/lib/automation/validation.ts` for accepted categories/types. Review each first import in `/admin`; reject irrelevant records. A source-check timestamp is not proof that a business is currently operating or that an offer remains open.
 
-## AI, configured later
+## AI configuration
 
-AI is disabled until a server-side provider is configured. Set either `GEMINI_API_KEY` plus `GEMINI_MODEL`, or `OPENROUTER_API_KEY` (with optional `OPENROUTER_MODELS`). Gemini is preferred when configured; OpenRouter can be the fallback. Photo analysis currently requires OpenRouter vision support.
+Production Gemini was configured on 2026-10-30 with `gemini-3.5-flash-lite`. AI is disabled in any environment without a server-side provider. Set either `GEMINI_API_KEY` plus `GEMINI_MODEL`, or `OPENROUTER_API_KEY` (with optional `OPENROUTER_MODELS`). Gemini is preferred when configured; OpenRouter can be the fallback. Photo analysis currently requires OpenRouter vision support.
 
 `/ask` supports English and Nepali questions. Eligible public feed posts can receive a separately labeled AI answer, and readers can ask follow-up questions. New posts request a reply immediately; the daily worker also checks a small recent backlog. Replies use available crop/scheme/price context and can only attach citations supplied by the server. They are general guidance, not verified diagnosis or a substitute for a local agricultural expert. Output remains subject to model error.
 

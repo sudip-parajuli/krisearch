@@ -12,6 +12,15 @@
 
 The language toggle is a browser preference on one bilingual URL. No fake `hreflang` URLs are declared. Separate, complete `/ne/` and `/en/` versions would be a future localization project if editorial capacity supports both.
 
+## Deployment status (2026-10-30)
+
+- Google Search Console URL-prefix property `https://krisearch.vercel.app/` is verified under Techwired Solutions via the Vercel `GOOGLE_SITE_VERIFICATION` meta tag. Keep that environment variable to retain verification.
+- `/sitemap.xml` was submitted and Google returned **Success**. Crawling/indexing reports need time to populate; submission is not proof that pages are indexed.
+- Supabase anonymous sign-ins were enabled on the Free plan with owner approval, preserving existing RLS and AI budgets.
+- Gemini 3.5 Flash-Lite produced Nepali and English responses through the public guest form in live verification. The earlier 2.5 model returned 404 because Google restricts legacy-model access for new projects.
+- The 18 current sample discussions are demo fixtures. They remain visibly labeled and are excluded from public discovery feeds. The reference sitemap exposes 56 URLs. Genuine new posts will enter the post sitemap and RSS automatically.
+- Bing Webmaster Tools has not been configured.
+
 ## Owner setup
 
 1. Add `https://krisearch.vercel.app/` as a URL-prefix property in Google Search Console. Use its HTML meta-tag token as Vercel `GOOGLE_SITE_VERIFICATION`, redeploy, then verify. Do not paste credentials. Submit `https://krisearch.vercel.app/sitemap.xml`.
