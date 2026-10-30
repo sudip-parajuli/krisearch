@@ -13,17 +13,26 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Comment, Profile } from "@/types/database";
 
 type CommentWithAuthor = Comment & {
-  profiles: Pick<Profile, "id" | "display_name" | "verified_badge" | "avatar_url" | "verification_method"> | null;
+  profiles: Pick<
+    Profile,
+    | "id"
+    | "display_name"
+    | "verified_badge"
+    | "avatar_url"
+    | "verification_method"
+  > | null;
 };
 
 export function CommentSection({
   postId,
   postAuthorId,
   comments,
+  demo = false,
 }: {
   postId: string;
   postAuthorId: string | null;
   comments: CommentWithAuthor[];
+  demo?: boolean;
 }) {
   const { t } = useLanguage();
   const router = useRouter();
@@ -36,12 +45,15 @@ export function CommentSection({
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setViewerId(data.user?.id ?? null));
+    supabase.auth
+      .getUser()
+      .then(({ data }) => setViewerId(data.user?.id ?? null));
   }, []);
 
   const isPostAuthor = !!postAuthorId && viewerId === postAuthorId;
   const topLevel = comments.filter((c) => !c.parent_comment_id);
-  const repliesOf = (id: string) => comments.filter((c) => c.parent_comment_id === id);
+  const repliesOf = (id: string) =>
+    comments.filter((c) => c.parent_comment_id === id);
 
   async function submit() {
     if (!body.trim()) return;
@@ -54,7 +66,10 @@ export function CommentSection({
       setSubmitting(false);
       return;
     }
-    await applyGuestIdentity(supabase, user.id, { name: guestName, contact: guestContact });
+    await applyGuestIdentity(supabase, user.id, {
+      name: guestName,
+      contact: guestContact,
+    });
 
     const { data: comment } = await supabase
       .from("comments")
@@ -77,7 +92,10 @@ export function CommentSection({
 
   async function markBestAnswer(commentId: string) {
     const supabase = createClient();
-    await supabase.from("comments").update({ is_best_answer: true }).eq("id", commentId);
+    await supabase
+      .from("comments")
+      .update({ is_best_answer: true })
+      .eq("id", commentId);
     router.refresh();
   }
 
@@ -101,7 +119,11 @@ export function CommentSection({
             {t("send")}
           </button>
         </div>
-        <VoiceInputButton onResult={(text) => setBody((prev) => (prev ? `${prev} ${text}` : text))} />
+        <VoiceInputButton
+          onResult={(text) =>
+            setBody((prev) => (prev ? `${prev} ${text}` : text))
+          }
+        />
         {!viewerId && (
           <button
             type="button"
@@ -112,7 +134,13 @@ export function CommentSection({
           </button>
         )}
         {showGuestFields && (
-          <GuestIdentityFields name={guestName} onNameChange={setGuestName} contact={guestContact} onContactChange={setGuestContact} compact />
+          <GuestIdentityFields
+            name={guestName}
+            onNameChange={setGuestName}
+            contact={guestContact}
+            onContactChange={setGuestContact}
+            compact
+          />
         )}
       </div>
 
@@ -120,28 +148,66 @@ export function CommentSection({
         <p className="text-sm text-neutral-400">{t("noCommentsYet")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {[...topLevel].sort((a, b) => Number(b.is_best_answer) - Number(a.is_best_answer)).map((c) => (
-            <li
-              key={c.id}
-              id={`comment-${c.id}`}
-              className={`rounded-lg border p-3 ${
-                c.is_best_answer
-                  ? "border-green-400 bg-green-50 dark:border-green-800 dark:bg-green-950"
-                  : "border-neutral-200 dark:border-neutral-800"
-              }`}
-            >
-              <CommentRow comment={c} isPostAuthor={isPostAuthor} onMarkBest={markBestAnswer} />
-              {repliesOf(c.id).length > 0 && (
-                <ul className="ml-4 mt-2 flex flex-col gap-2 border-l border-neutral-200 pl-3 dark:border-neutral-800">
-                  {repliesOf(c.id).map((r) => (
-                    <li key={r.id} id={`comment-${r.id}`}>
-                      <CommentRow comment={r} isPostAuthor={isPostAuthor} onMarkBest={markBestAnswer} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
+          {[...topLevel]
+            .sort((a, b) => Number(b.is_best_answer) - Number(a.is_best_answer))
+            .map((c) => (
+              <li
+                key={c.id}
+                id={`comment-${c.id}`}
+                className={`rounded-lg border p-3 ${
+                  c.is_best_answer
+                    ? "border-green-400 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                    : "border-neutral-200 dark:border-neutral-800"
+                }`}
+              >
+                <CommentRow
+                  comment={
+                    demo
+                      ? {
+                          ...c,
+                          ai_verdict: null,
+                          profiles: c.profiles
+                            ? {
+                                ...c.profiles,
+                                verified_badge: null,
+                                verification_method: "guest",
+                              }
+                            : null,
+                        }
+                      : c
+                  }
+                  isPostAuthor={isPostAuthor}
+                  onMarkBest={markBestAnswer}
+                />
+                {repliesOf(c.id).length > 0 && (
+                  <ul className="ml-4 mt-2 flex flex-col gap-2 border-l border-neutral-200 pl-3 dark:border-neutral-800">
+                    {repliesOf(c.id).map((r) => (
+                      <li key={r.id} id={`comment-${r.id}`}>
+                        <CommentRow
+                          comment={
+                            demo
+                              ? {
+                                  ...r,
+                                  ai_verdict: null,
+                                  profiles: r.profiles
+                                    ? {
+                                        ...r.profiles,
+                                        verified_badge: null,
+                                        verification_method: "guest",
+                                      }
+                                    : null,
+                                }
+                              : r
+                          }
+                          isPostAuthor={isPostAuthor}
+                          onMarkBest={markBestAnswer}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
         </ul>
       )}
     </div>
@@ -169,9 +235,14 @@ function CommentRow({
             ✓ {t("bestAnswer")}
           </span>
         )}
-        <AIVerdictBadge verdict={comment.ai_verdict} rationale={comment.ai_rationale} />
+        <AIVerdictBadge
+          verdict={comment.ai_verdict}
+          rationale={comment.ai_rationale}
+        />
       </div>
-      <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">{comment.body}</p>
+      <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">
+        {comment.body}
+      </p>
       <div className="mt-1 flex items-center gap-3">
         <ReportButton commentId={comment.id} />
         {isPostAuthor && !comment.is_best_answer && (

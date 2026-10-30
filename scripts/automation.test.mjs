@@ -235,3 +235,12 @@ test("Gemini JSON requests use server headers and ignore thinking parts", async 
   assert.equal(result, '{"answer":"A sufficiently long answer"}');
  } finally {globalThis.fetch=previousFetch; if(previousKey===undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY=previousKey; if(previousModel===undefined) delete process.env.GEMINI_MODEL; else process.env.GEMINI_MODEL=previousModel;}
 });
+
+test("synthetic seed conversations are not mistaken for genuine posts", () => {
+ const {isDemoPost} = load("demo-content.ts");
+ const source=fs.readFileSync(path.resolve(root,"../../scripts/seed-demo.mjs"),"utf8");
+ const block=source.split("const POSTS = [")[1].split("// Answers/comments")[0];
+ const matches=[...block.matchAll(/title: ("(?:[^"\\]|\\.)*")[\s\S]*?body: ("(?:[^"\\]|\\.)*")/g)];
+ assert.equal(matches.length,18);
+ for(const m of matches) { const fixture={title:JSON.parse(m[1]),body:JSON.parse(m[2])};assert.equal(isDemoPost(fixture),true);assert.equal(isDemoPost({...fixture,body:"A genuinely different field report"}),false); }
+});

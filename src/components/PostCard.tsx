@@ -1,3 +1,4 @@
+import { isDemoPost } from "@/lib/demo-content";
 import Link from "next/link";
 import { Sprout, MapPin, MessageCircle } from "lucide-react";
 import { PostTypeBadge } from "./PostTypeBadge";
@@ -9,15 +10,33 @@ import { slugify } from "@/lib/slug";
 import type { PostRow } from "@/lib/data";
 
 export function PostCard({ post }: { post: PostRow }) {
+  const demo = isDemoPost(post);
   return (
     <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
       <VoteButtons postId={post.id} initialScore={post.vote_score} />
       <div className="min-w-0 flex-1">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <AuthorIdentity profile={post.profiles} />
-          <span className="text-xs text-neutral-400">{new Date(post.created_at).toLocaleDateString()}</span>
+          <AuthorIdentity
+            profile={
+              demo && post.profiles
+                ? {
+                    ...post.profiles,
+                    verified_badge: null,
+                    verification_method: "guest",
+                  }
+                : post.profiles
+            }
+          />
+          <span className="text-xs text-neutral-400">
+            {new Date(post.created_at).toLocaleDateString()}
+          </span>
         </div>
 
+        {demo && (
+          <p className="mb-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
+            नमुना सामग्री · Demo scenario
+          </p>
+        )}
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
           <PostTypeBadge type={post.type} />
           {post.crops && (
@@ -33,18 +52,29 @@ export function PostCard({ post }: { post: PostRow }) {
               <MapPin className="h-3 w-3" /> {post.districts.name}
             </span>
           )}
-          <AIVerdictBadge verdict={post.ai_verdict} rationale={post.ai_rationale} />
+          {!demo && (
+            <AIVerdictBadge
+              verdict={post.ai_verdict}
+              rationale={post.ai_rationale}
+            />
+          )}
         </div>
 
         <Link href={`/post/${post.id}`} className="block">
           <h3 className="font-display font-semibold text-neutral-900 hover:text-green-700 dark:text-neutral-100 dark:hover:text-green-400">
             {post.title}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">{post.body}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
+            {post.body}
+          </p>
         </Link>
 
         <div className="mt-2.5 flex items-center gap-3 text-xs">
-          <SaveButton href={`/post/${post.id}`} title={post.title} kind="post" />
+          <SaveButton
+            href={`/post/${post.id}`}
+            title={post.title}
+            kind="post"
+          />
           <Link
             href={`/post/${post.id}`}
             className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-1 font-medium text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"

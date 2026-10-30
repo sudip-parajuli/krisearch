@@ -1,3 +1,4 @@
+import { isDemoPost } from "@/lib/demo-content";
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runPriceSync } from "./prices";
@@ -34,11 +35,12 @@ export async function runAutomation() {
         if (!hasTextAI()) return { status: "disabled" };
         const { data: posts } = await admin
           .from("posts")
-          .select("id")
+          .select("id,title,body")
           .in("type", ["question", "disease_pest_report"])
           .order("created_at", { ascending: false })
           .limit(5);
         for (const post of posts ?? []) {
+          if (isDemoPost(post)) continue;
           const { data: answered } = await admin
             .from("ai_answers")
             .select("status")
@@ -64,7 +66,10 @@ export async function runAutomation() {
           ("body" in prices &&
             prices.body.sources?.some((source) => source.error)))) ||
       (Array.isArray(sources) && sources.some((source) => source.error)) ||
-      (ai && typeof ai === "object" && "status" in ai && ["failed", "setup_required", "limited"].includes(String(ai.status)));
+      (ai &&
+        typeof ai === "object" &&
+        "status" in ai &&
+        ["failed", "setup_required", "limited"].includes(String(ai.status)));
     const details = { prices, sources, ai };
     if (run)
       await admin

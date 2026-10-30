@@ -1,3 +1,4 @@
+import { isDemoPost } from "@/lib/demo-content";
 import { publicContentClient } from "@/lib/public-content";
 import { absoluteUrl, xmlEscape } from "@/lib/seo";
 import { slugify } from "@/lib/slug";
@@ -46,16 +47,18 @@ export async function GET(
     if (client) {
       const { data, error } = await client
         .from("posts")
-        .select("id,created_at")
+        .select("id,title,body,created_at")
         .order("created_at", { ascending: false })
         .order("id")
         .range(start, start + 999);
       if (error)
         return new Response("Sitemap temporarily unavailable", { status: 503 });
-      entries = (data ?? []).map((p) => ({
-        path: `/post/${p.id}`,
-        date: p.created_at,
-      }));
+      entries = (data ?? [])
+        .filter((p) => !isDemoPost(p))
+        .map((p) => ({
+          path: `/post/${p.id}`,
+          date: p.created_at,
+        }));
     }
   }
   return new Response(

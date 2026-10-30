@@ -15,7 +15,9 @@ export function AskAI({ postId }: { postId?: string }) {
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<BotAnswer | null>(null);
-  const [error, setError] = useState<"session" | "limited" | "provider" | "network" | null>(null);
+  const [error, setError] = useState<
+    "session" | "limited" | "provider" | "network" | null
+  >(null);
   useEffect(() => {
     const c = new AbortController();
     fetch("/api/ai/ask", { signal: c.signal })
@@ -33,7 +35,12 @@ export function AskAI({ postId }: { postId?: string }) {
     setError(null);
     setResult(null);
     try {
-      try { await ensureSession(createClient()); } catch { setError("session"); return; }
+      try {
+        await ensureSession(createClient());
+      } catch {
+        setError("session");
+        return;
+      }
       const response = await fetch("/api/ai/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,7 +48,16 @@ export function AskAI({ postId }: { postId?: string }) {
         signal: AbortSignal.timeout(45_000),
       });
       const data = await response.json();
-      if (!response.ok || !data.result) { setError(response.status === 429 ? "limited" : response.status === 401 ? "session" : "provider"); return; }
+      if (!response.ok || !data.result) {
+        setError(
+          response.status === 429
+            ? "limited"
+            : response.status === 401
+              ? "session"
+              : "provider",
+        );
+        return;
+      }
       setResult(data.result);
     } catch {
       setError("network");
@@ -109,10 +125,31 @@ export function AskAI({ postId }: { postId?: string }) {
               : "Ask AI"}
         </button>
       </form>
-      {error === "session" && <Link href="/login" className="inline-block text-sm text-green-700 underline dark:text-green-400">{ne ? "लगइन गर्नुहोस्" : "Sign in"}</Link>}
+      {error === "session" && (
+        <Link
+          href="/login"
+          className="inline-block text-sm text-green-700 underline dark:text-green-400"
+        >
+          {ne ? "लगइन गर्नुहोस्" : "Sign in"}
+        </Link>
+      )}
       {error && (
         <p role="alert" className="text-sm text-amber-800 dark:text-amber-300">
-          {error === "session" ? (ne ? "सत्र सुरु हुन सकेन। लगइन गरेर फेरि प्रयास गर्नुहोस्।" : "A session could not be started. Please sign in and try again.") : error === "limited" ? (ne ? "AI प्रयोग सीमा पुगेको छ वा सेवा सेटअप अपूर्ण छ। पछि फेरि प्रयास गर्नुहोस्।" : "The AI request limit has been reached or setup is incomplete. Please try later.") : error === "provider" ? (ne ? "AI प्रदायकबाट जवाफ आएन। केही समयपछि प्रयास गर्नुहोस्।" : "The AI provider could not return an answer. Please try again later.") : (ne ? "जडानमा समस्या भयो। फेरि प्रयास गर्नुहोस्।" : "The connection failed. Please try again.")}
+          {error === "session"
+            ? ne
+              ? "सत्र सुरु हुन सकेन। लगइन गरेर फेरि प्रयास गर्नुहोस्।"
+              : "A session could not be started. Please sign in and try again."
+            : error === "limited"
+              ? ne
+                ? "AI प्रयोग सीमा पुगेको छ वा सेवा सेटअप अपूर्ण छ। पछि फेरि प्रयास गर्नुहोस्।"
+                : "The AI request limit has been reached or setup is incomplete. Please try later."
+              : error === "provider"
+                ? ne
+                  ? "AI प्रदायकबाट जवाफ आएन। केही समयपछि प्रयास गर्नुहोस्।"
+                  : "The AI provider could not return an answer. Please try again later."
+                : ne
+                  ? "जडानमा समस्या भयो। फेरि प्रयास गर्नुहोस्।"
+                  : "The connection failed. Please try again."}
         </p>
       )}
       {result && (

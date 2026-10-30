@@ -96,6 +96,12 @@ export default function AboutPage() {
           and community content may need correction.
         </p>
       </section>
+      <p className="rounded-xl border border-amber-300 p-4">
+        नमुना सामग्री · Examples labeled “Demo scenario” use synthetic users,
+        votes and replies from the repository’s demo seed. They are not real
+        farmer reports, expert endorsements or verified outcomes, and are
+        excluded from search indexing.
+      </p>
       <nav className="flex flex-wrap gap-4 text-green-700 underline dark:text-green-400">
         <Link href="/crops">बाली · Crops</Link>
         <Link href="/feed">समुदाय · Community</Link>

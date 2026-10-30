@@ -29,3 +29,7 @@ Public question text and relevant public reference context reach Google when AI 
 ## Limits
 
 Sitemaps and structured data improve discovery and interpretation, not ranking guarantees. Google says the same SEO fundamentals apply to AI features; a special GEO file or AI keyword stuffing is not required. Personal `/ask` interactions are not saved as new searchable pages; actual public feed posts and their completed replies are discoverable.
+
+## Demonstration content
+
+The repository contains 18 synthetic community scenarios from `scripts/seed-demo.mjs`. Exact title/body fixtures are labeled as demos, excluded from RSS/post sitemaps and Q&A markup, given noindex metadata, and skipped by automatic AI replies. They are retained for demonstration, not presented as real farmer experiences. Update `src/lib/demo-content.ts` alongside any demo fixture changes. New genuine public posts are eligible for discovery.

@@ -1,3 +1,4 @@
+import { isDemoPost } from "@/lib/demo-content";
 import "server-only";
 import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -157,6 +158,7 @@ export async function answerPost(
     .maybeSingle();
   if (
     !post ||
+    isDemoPost(post) ||
     ![
       "question",
       "disease_pest_report",
@@ -166,7 +168,9 @@ export async function answerPost(
   )
     return { status: "not_eligible" };
   const version = createHash("sha256")
-    .update(`${process.env.GEMINI_MODEL ?? process.env.OPENROUTER_MODELS ?? "default"}\n${post.title}\n${post.body}`)
+    .update(
+      `${process.env.GEMINI_MODEL ?? process.env.OPENROUTER_MODELS ?? "default"}\n${post.title}\n${post.body}`,
+    )
     .digest("hex");
   const { data: existing } = await admin
     .from("ai_answers")
